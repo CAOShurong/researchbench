@@ -238,6 +238,15 @@ class TestRunCommand:
         assert "paper_comprehension" in result.output
         assert "item(s)" in result.output
 
+    def test_run_ignore(self, runner):
+        """--ignore should exclude a task from the run."""
+        filtered = runner.invoke(
+            main,
+            ["run", "--tasks", "all", "--model", "gpt-4o", "--dry-run", "--ignore", "peer_review"],
+        )
+        assert filtered.exit_code == 0
+        assert "peer_review" not in filtered.output
+
 
 class TestCompareCommand:
     def test_compare_text_table(self, runner):
@@ -361,6 +370,27 @@ class TestCompareCommand:
         result = runner.invoke(main, ["compare", "--tasks", "all", "--dry-run"])
         assert result.exit_code == 0
         assert "Dry run" in result.output
+
+    def test_compare_ignore(self, runner):
+        result = runner.invoke(
+            main,
+            [
+                "compare",
+                "--model",
+                "gpt-4o",
+                "--model",
+                "claude-3-opus",
+                "--tasks",
+                "all",
+                "--dry-run",
+                "--ignore",
+                "peer_review,reproduction",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "peer_review" not in result.output
+        assert "reproduction" not in result.output
+        assert "paper_comprehension" in result.output
 
     def test_compare_requires_model_without_dry_run(self, runner):
         result = runner.invoke(main, ["compare", "--tasks", "all"])

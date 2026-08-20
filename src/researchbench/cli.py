@@ -66,16 +66,23 @@ _TASK_SAMPLE_PATH: dict[str, tuple[str | int, ...]] = {
 }
 
 
-def _resolve_tasks(tasks: str) -> list[str]:
+def _resolve_tasks(tasks: str, ignore: str = "") -> list[str]:
     if tasks == "all":
-        return list(TASK_INFO.keys())
-    requested = [t.strip() for t in tasks.split(",") if t.strip()]
-    unknown = [t for t in requested if t not in TASK_INFO]
+        selected = list(TASK_INFO.keys())
+    else:
+        selected = [t.strip() for t in tasks.split(",") if t.strip()]
+    unknown = [t for t in selected if t not in TASK_INFO]
     if unknown:
         raise click.BadParameter(
             f"Unknown task(s): {', '.join(unknown)}. Available: {', '.join(TASK_INFO.keys())}"
         )
-    return requested
+    if ignore:
+        excluded = [t.strip() for t in ignore.split(",") if t.strip()]
+        unknown_ex = [t for t in excluded if t not in TASK_INFO]
+        if unknown_ex:
+            raise click.BadParameter(f"Unknown task(s) in --ignore: {', '.join(unknown_ex)}")
+        selected = [t for t in selected if t not in excluded]
+    return selected
 
 
 def _get_task_data(task_name: str) -> tuple[list | None, int]:
@@ -224,6 +231,7 @@ def _show_dry_run(task_list: list[str]) -> None:
 
 @main.command()
 @click.option("--tasks", default="all", help="Comma-separated task names or 'all'.")
+@click.option("--ignore", default="", help="Comma-separated task names to exclude from --tasks.")
 @click.option("--model", default="gpt-4o", help="Model to evaluate.")
 @click.option(
     "--format",
@@ -238,10 +246,16 @@ def _show_dry_run(task_list: list[str]) -> None:
     "--dry-run", is_flag=True, default=False, help="Show tasks and data sizes without evaluating."
 )
 def run(
-    tasks: str, model: str, fmt: str, save_path: str | None, verbose: bool, dry_run: bool
+    tasks: str,
+    ignore: str,
+    model: str,
+    fmt: str,
+    save_path: str | None,
+    verbose: bool,
+    dry_run: bool,
 ) -> None:
     """Run the benchmark against a single model."""
-    task_list = _resolve_tasks(tasks)
+    task_list = _resolve_tasks(tasks, ignore=ignore)
     if dry_run:
         _show_dry_run(task_list)
         return
@@ -259,6 +273,7 @@ def run(
     help="Model to evaluate (repeatable, e.g. --model gpt-4o --model claude-3-opus).",
 )
 @click.option("--tasks", default="all", help="Comma-separated task names or 'all'.")
+@click.option("--ignore", default="", help="Comma-separated task names to exclude from --tasks.")
 @click.option(
     "--format",
     "fmt",
@@ -276,13 +291,14 @@ def run(
 def compare(
     models: tuple[str, ...],
     tasks: str,
+    ignore: str,
     fmt: str,
     save_path: str | None,
     verbose: bool,
     dry_run: bool,
 ) -> None:
     """Compare multiple models on the same tasks."""
-    task_list = _resolve_tasks(tasks)
+    task_list = _resolve_tasks(tasks, ignore=ignore)
     if dry_run:
         _show_dry_run(task_list)
         return
