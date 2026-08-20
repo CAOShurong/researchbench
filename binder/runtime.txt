@@ -1,0 +1,8 @@
+python_version: "3.11"
+runtime: python-3.11
+host: binder
+command: |
+  pip install -e .
+  echo "ResearchBench installed. Try:"
+  echo "  researchbench list"
+  echo "  researchbench run --model mock"

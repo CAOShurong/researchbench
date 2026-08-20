@@ -1,0 +1,2 @@
+pip install -e /home/jovyan/researchbench
+pip install jupyter ipywidgets

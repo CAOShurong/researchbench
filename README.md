@@ -3,6 +3,7 @@
 ![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/CAOShurong/researchbench/master?urlpath=lab)
 
 A comprehensive benchmark for evaluating AI academic and research capabilities.
 
