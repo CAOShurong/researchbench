@@ -40,6 +40,11 @@ class TestShowCommand:
         assert result.exit_code == 0
         assert "paper_comprehension" in result.output
 
+    def test_show_reports_dataset_size(self, runner):
+        result = runner.invoke(main, ["show", "paper_comprehension"])
+        assert result.exit_code == 0
+        assert "Dataset (PAPERS)" in result.output
+
     def test_show_unknown_task(self, runner):
         result = runner.invoke(main, ["show", "nope"])
         assert result.exit_code == 0  # graceful

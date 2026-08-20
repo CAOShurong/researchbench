@@ -123,7 +123,7 @@ class Benchmark:
     def __init__(self, tasks: list | None = None):
         import researchbench.tasks as t
 
-        all_tasks = {
+        all_tasks: dict[str, Any] = {
             "paper_comprehension": t.PaperComprehension(),
             "idea_generation": t.IdeaGeneration(),
             "literature_synthesis": t.LiteratureSynthesis(),
@@ -132,7 +132,9 @@ class Benchmark:
             "reproduction": t.Reproduction(),
             "open_question_id": t.OpenQuestionId(),
         }
-        self.tasks = {k: all_tasks[k] for k in (tasks or list(all_tasks)) if k in all_tasks}
+        self.tasks: dict[str, Any] = {
+            k: all_tasks[k] for k in (tasks or list(all_tasks)) if k in all_tasks
+        }
 
     def run(self, model: str = "gpt-4o", **kwargs) -> BenchmarkResult:
         result = BenchmarkResult(model=model)

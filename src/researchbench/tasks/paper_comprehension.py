@@ -2,7 +2,7 @@
 
 from typing import Any
 
-PAPERS = [
+PAPERS: list[dict[str, Any]] = [
     {
         "id": "attention-2017",
         "title": "Attention Is All You Need",

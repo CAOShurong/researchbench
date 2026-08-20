@@ -59,5 +59,13 @@ line-length = 100
 target-version = "py39"
 
 [tool.mypy]
-python_version = "3.9"
+# Note: current mypy releases require a target of 3.10+; the package itself
+# still supports Python 3.9 at runtime (future-annotations makes `X | None`
+# annotations lazy).
+python_version = "3.10"
 warn_unused_ignores = true
+# openai/anthropic are optional (the `judge` extra); the SDK stubs are fetched
+# at runtime only, so mypy must not require them in a base install.
+[[tool.mypy.overrides]]
+module = ["openai", "anthropic"]
+ignore_missing_imports = true

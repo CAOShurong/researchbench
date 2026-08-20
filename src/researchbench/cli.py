@@ -101,11 +101,11 @@ def show(task_name: str) -> None:
     info = TASK_INFO[task_name]
     click.echo(f"Task: {task_name}")
     click.echo(f"Description: {info['desc']}")
-    module = info["class"]
-    try:
-        instance = module()
-    except TypeError:
-        instance = module
+    import importlib
+
+    # Dataset constants (PAPERS, CONTEXTS, ...) live at module level in each task
+    # module (researchbench.tasks.<task_name>), not on the task class.
+    mod = importlib.import_module(f"researchbench.tasks.{task_name}")
     for attr in (
         "PAPERS",
         "CONTEXTS",
@@ -115,7 +115,7 @@ def show(task_name: str) -> None:
         "SCENARIOS",
         "PAPER_SETS",
     ):
-        data = getattr(module, attr, None) or getattr(instance, attr, None)
+        data = getattr(mod, attr, None)
         if data is not None:
             click.echo(f"\nDataset ({attr}): {len(data)} item(s)")
             break
