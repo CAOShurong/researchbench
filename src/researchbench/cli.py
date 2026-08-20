@@ -122,7 +122,28 @@ def _emit(report: str, fmt: str, save_path: str | None) -> None:
 @click.group()
 @click.version_option(package_name="researchbench", prog_name="researchbench")
 def main() -> None:
-    """ResearchBench: a benchmark for AI academic and research capabilities."""
+    """ResearchBench: a benchmark for AI academic and research capabilities.
+
+    Examples:
+
+      researchbench list
+
+      researchbench run --tasks all --model gpt-4o
+
+      researchbench run --tasks paper_comprehension --model gpt-4o --format json --save results.json
+
+      researchbench compare --model gpt-4o --model claude-3-opus --tasks all
+
+      researchbench verify
+
+      researchbench tasks --format json
+
+      researchbench sample paper_comprehension
+
+      researchbench data paper_comprehension --format json
+
+      researchbench report --from results.json --format html --save report.html
+    """
 
 
 @main.command("list")

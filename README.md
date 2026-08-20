@@ -86,6 +86,7 @@ documented in [`docs/TASK_DEFINITIONS.md`](docs/TASK_DEFINITIONS.md).
 - [`docs/TASK_DEFINITIONS.md`](docs/TASK_DEFINITIONS.md) — normative task definitions
   and scoring rules.
 - [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) — how to develop, test and extend.
+- [`docs/FAQ.md`](docs/FAQ.md) — frequently asked questions.
 - [`examples/`](examples/) — runnable CLI and Python API demos (mock-mode safe).
 - [`CHANGELOG.md`](CHANGELOG.md) — version history.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — proposed direction (non-binding).
