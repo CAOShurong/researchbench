@@ -55,6 +55,12 @@ The GitHub Actions CI (`.github/workflows/ci.yml`) runs:
   wheel into a clean virtualenv, and smoke-tests `researchbench --version`,
   `list` and `run --format json`.
 
+On the 80% coverage gate: the missing ~12% is the *live* model-SDK branches
+inside each task's `_call_model` (the real `openai`/`anthropic` calls), which
+cannot run in CI without API keys. The mock path, CLI, and all scoring logic are
+covered. Deprecation warnings are treated as errors via the pytest
+`filterwarnings` config.
+
 ## Testing
 
 - `tests/test_basic.py` asserts the shared task interface (evaluate returns
