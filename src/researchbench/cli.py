@@ -414,6 +414,31 @@ def verify() -> None:
         raise SystemExit(1)
 
 
+@main.command()
+@click.argument("task_name")
+@click.option(
+    "--format", "fmt", type=click.Choice(["text", "json"], case_sensitive=False), default="text"
+)
+@click.option("--save", "save_path", default=None, help="Write to file.")
+def data(task_name: str, fmt: str, save_path: str | None) -> None:
+    """Export a task's dataset as JSON."""
+    if task_name not in TASK_INFO:
+        click.echo(f"Unknown task: {task_name}")
+        click.echo("Available: " + ", ".join(TASK_INFO.keys()))
+        return
+    ds, size = _get_task_data(task_name)
+    if ds is None:
+        click.echo(f"No dataset found for {task_name}")
+        return
+    if fmt == "json":
+        import json
+
+        _emit(json.dumps(ds, indent=2, default=str), fmt, save_path)
+    else:
+        click.echo(f"Task: {task_name}")
+        click.echo(f"Dataset size: {size} item(s)")
+
+
 def _compare_text(results: list[BenchmarkResult], task_list: list[str], verbose: bool) -> str:
     header_models = [r.model for r in results]
     col = max(16, max((len(m) for m in header_models), default=0))

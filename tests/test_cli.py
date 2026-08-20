@@ -479,3 +479,26 @@ class TestVerifyCommand:
         assert "Verification" in result.output
         assert "PASS" in result.output
         assert "All 7 tasks" in result.output
+
+
+class TestDataCommand:
+    def test_data_text(self, runner):
+        result = runner.invoke(main, ["data", "paper_comprehension"])
+        assert result.exit_code == 0
+        assert "paper_comprehension" in result.output
+        assert "2 item(s)" in result.output
+
+    def test_data_json(self, runner):
+        result = runner.invoke(main, ["data", "idea_generation", "--format", "json"])
+        assert result.exit_code == 0
+        import json
+
+        payload = json.loads(result.output)
+        assert isinstance(payload, list)
+        assert len(payload) > 0
+        assert "description" in payload[0]
+
+    def test_data_unknown_task(self, runner):
+        result = runner.invoke(main, ["data", "nope"])
+        assert result.exit_code == 0
+        assert "Unknown" in result.output

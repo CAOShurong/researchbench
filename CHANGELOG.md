@@ -25,12 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `to_json()` / `to_html()` / `to_format()`.
 - CLI (`researchbench` / `python -m researchbench.cli` **and** `python -m
   researchbench`): `list`, `show`, `run` (with `--format text|json|html`,
-  `--save PATH`, `--verbose`, `--dry-run`), `compare` (multi-`--model`, text
-  table / json / html, `--dry-run` without requiring `--model`), `report`
-  (re-render saved JSON results), `tasks --format json` (machine-readable
-  registry with dataset sizes), `sample <task_name>`, and `schema` (JSON Schema
-  for the report format). `--save` reports a friendly error when the target
-  cannot be written.
+  `--save PATH`, `--verbose`, `--dry-run`, `--ignore`, `--benchmark`),
+  `compare` (multi-`--model`, text table / json / html, `--dry-run` without
+  requiring `--model`, `--ignore`), `report` (re-render saved JSON results),
+  `tasks --format json` (machine-readable registry with dataset sizes),
+  `sample <task_name>`, `data <task_name> --format json` (export dataset),
+  `schema` (JSON Schema for the report format), and `verify` (mock-mode
+  health check). `--tasks` supports fnmatch glob patterns (`paper_*`).
+  `--save` reports a friendly error when the target cannot be written.
 - Documentation: `docs/TASK_DEFINITIONS.md`, `docs/USAGE.md`,
   `docs/CONTRIBUTING.md`, `docs/RESEARCH.md` (background research),
   `docs/API.md` (Python API reference), `docs/ROADMAP.md` (proposed
