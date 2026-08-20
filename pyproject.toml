@@ -13,7 +13,9 @@ authors = [{name = "CAOShurong", email = "170531907+CAOShurong@users.noreply.git
 keywords = ["benchmark", "ai", "research", "academic", "evaluation", "llm"]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Environment :: Console",
     "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -22,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Education :: Testing",
 ]
 dependencies = [
     "pydantic>=2.0",
@@ -29,6 +32,13 @@ dependencies = [
     "click>=8.0",
     "rich>=13.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/CAOShurong/researchbench"
+Repository = "https://github.com/CAOShurong/researchbench"
+Documentation = "https://github.com/CAOShurong/researchbench#readme"
+Issues = "https://github.com/CAOShurong/researchbench/issues"
+Changelog = "https://github.com/CAOShurong/researchbench/releases"
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov", "ruff", "mypy"]
