@@ -77,6 +77,9 @@ documented in [`docs/TASK_DEFINITIONS.md`](docs/TASK_DEFINITIONS.md).
   and scoring rules.
 - [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) — how to develop, test and extend.
 - [`examples/`](examples/) — runnable CLI and Python API demos (mock-mode safe).
+- [`CHANGELOG.md`](CHANGELOG.md) — version history.
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) / [`SECURITY.md`](SECURITY.md) —
+  community norms and vulnerability reporting.
 
 ## Development
 

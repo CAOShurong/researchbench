@@ -9,6 +9,11 @@ venv/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+report.json
+comparison.html
 .DS_Store
 *.log
 node_modules/
