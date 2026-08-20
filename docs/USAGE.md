@@ -16,7 +16,7 @@ pip install -e .
 # LLM-as-judge/real-model extras are NOT required to run the CLI.
 ```
 
-Runtime dependencies: `pydantic`, `pyyaml`, `click`, `rich`. To call real
+Runtime dependency: `click`. To call real
 models you also need `openai` and/or `anthropic` (see
 [Evaluating real models](#evaluating-real-models)).
 
