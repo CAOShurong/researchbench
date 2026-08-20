@@ -27,11 +27,16 @@ and a CLI for running evaluations. The gap analysis is recorded in
 
 ## Installation
 
+> **Status**: source install is available now. PyPI publishing uses a Trusted
+> Publisher GitHub Action (`.github/workflows/release.yml`) and goes live once
+> the PyPI project is registered. Until then install from source:
+
 ```bash
-pip install researchbench
+# From the repo checkout:
+pip install -e .
 
 # To call real models (openai/anthropic clients):
-pip install researchbench[judge]
+pip install -e ".[judge]"
 ```
 
 ## Quick Start
