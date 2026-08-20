@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import json
 
 import click
@@ -70,12 +71,16 @@ def _resolve_tasks(tasks: str, ignore: str = "") -> list[str]:
     if tasks == "all":
         selected = list(TASK_INFO.keys())
     else:
-        selected = [t.strip() for t in tasks.split(",") if t.strip()]
-    unknown = [t for t in selected if t not in TASK_INFO]
-    if unknown:
-        raise click.BadParameter(
-            f"Unknown task(s): {', '.join(unknown)}. Available: {', '.join(TASK_INFO.keys())}"
-        )
+        raw = [t.strip() for t in tasks.split(",") if t.strip()]
+        selected = []
+        for pattern in raw:
+            matched = fnmatch.filter(TASK_INFO.keys(), pattern)
+            if not matched:
+                raise click.BadParameter(
+                    f"Unknown task(s): '{pattern}' does not match any task. "
+                    f"Available: {', '.join(TASK_INFO.keys())}"
+                )
+            selected.extend(matched)
     if ignore:
         excluded = [t.strip() for t in ignore.split(",") if t.strip()]
         unknown_ex = [t for t in excluded if t not in TASK_INFO]

@@ -247,6 +247,20 @@ class TestRunCommand:
         assert filtered.exit_code == 0
         assert "peer_review" not in filtered.output
 
+    def test_run_glob_tasks(self, runner):
+        """--tasks should support glob patterns."""
+        result = runner.invoke(
+            main, ["run", "--tasks", "paper_*", "--model", "gpt-4o", "--dry-run"]
+        )
+        assert result.exit_code == 0
+        assert "paper_comprehension" in result.output
+        assert "idea_generation" not in result.output
+
+    def test_run_glob_no_match(self, runner):
+        result = runner.invoke(main, ["run", "--tasks", "does_not_match_*", "--model", "gpt-4o"])
+        assert result.exit_code != 0
+        assert "does not match" in result.output.lower()
+
 
 class TestCompareCommand:
     def test_compare_text_table(self, runner):
