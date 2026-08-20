@@ -52,6 +52,19 @@ TASK_INFO = {
 
 FORMATS = ["text", "json", "html"]
 
+# Mapping from task name to a nested-data path for extracting the first prompt.
+# The first element is the module-level attribute name; subsequent elements are
+# keys / indices to traverse: e.g. PAPERS[0]["questions"][0]["q"].
+_TASK_SAMPLE_PATH: dict[str, tuple[str | int, ...]] = {
+    "paper_comprehension": ("PAPERS", "questions", 0, "q"),
+    "idea_generation": ("CONTEXTS", "question"),
+    "literature_synthesis": ("SYNTHESIS_SETS", "question"),
+    "experimental_design": ("HYPOTHESES", "question"),
+    "peer_review": ("MOCK_SUBMISSIONS", "question"),
+    "reproduction": ("SCENARIOS", "question"),
+    "open_question_id": ("PAPER_SETS", "question"),
+}
+
 
 def _resolve_tasks(tasks: str) -> list[str]:
     if tasks == "all":
@@ -104,24 +117,94 @@ def show(task_name: str) -> None:
     info = TASK_INFO[task_name]
     click.echo(f"Task: {task_name}")
     click.echo(f"Description: {info['desc']}")
-    import importlib
+    path = _TASK_SAMPLE_PATH.get(task_name)
+    if path:
+        attr = path[0]
+        import importlib
 
-    # Dataset constants (PAPERS, CONTEXTS, ...) live at module level in each task
-    # module (researchbench.tasks.<task_name>), not on the task class.
-    mod = importlib.import_module(f"researchbench.tasks.{task_name}")
-    for attr in (
-        "PAPERS",
-        "CONTEXTS",
-        "SYNTHESIS_SETS",
-        "HYPOTHESES",
-        "MOCK_SUBMISSIONS",
-        "SCENARIOS",
-        "PAPER_SETS",
-    ):
+        mod = importlib.import_module(f"researchbench.tasks.{task_name}")
         data = getattr(mod, attr, None)
         if data is not None:
             click.echo(f"\nDataset ({attr}): {len(data)} item(s)")
-            break
+
+
+@main.command()
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["text", "json"], case_sensitive=False),
+    default="text",
+    help="Output format.",
+)
+@click.option("--save", "save_path", default=None, help="Write to file.")
+def tasks(fmt: str, save_path: str | None) -> None:
+    """List available tasks with metadata (dataset size, prompt key)."""
+    import importlib
+
+    entries = []
+    for name, info in TASK_INFO.items():
+        path = _TASK_SAMPLE_PATH.get(name)
+        dataset_size = 0
+        if path:
+            attr = path[0]
+            mod = importlib.import_module(f"researchbench.tasks.{name}")
+            data = getattr(mod, attr, None)
+            if data is not None:
+                dataset_size = len(data)
+        entries.append({"name": name, "description": info["desc"], "dataset_size": dataset_size})
+
+    if fmt == "json":
+        import json
+
+        _emit(json.dumps(entries, indent=2), fmt, save_path)
+        return
+
+    click.echo("ResearchBench Tasks:")
+    click.echo("=" * 70)
+    for e in entries:
+        click.echo(f"  {e['name']:25s} {e['description']}")
+        click.echo(f"  {'':25s} dataset: {e['dataset_size']} item(s)")
+
+
+@main.command()
+@click.argument("task_name")
+@click.option(
+    "--format", "fmt", type=click.Choice(["text", "json"], case_sensitive=False), default="text"
+)
+def sample(task_name: str, fmt: str) -> None:
+    """Show the first prompt in a task's dataset."""
+    if task_name not in TASK_INFO:
+        click.echo(f"Unknown task: {task_name}")
+        click.echo("Available: " + ", ".join(TASK_INFO.keys()))
+        return
+    path = _TASK_SAMPLE_PATH.get(task_name)
+    if not path:
+        click.echo(f"No dataset attribute mapping for {task_name}")
+        return
+    import importlib
+
+    mod = importlib.import_module(f"researchbench.tasks.{task_name}")
+    attr = path[0]
+    data = getattr(mod, attr, None)
+    if not data:
+        click.echo(f"No dataset found for {task_name}")
+        return
+    # Walk the nested path to extract the first prompt from the first item.
+    obj = data[0]
+    for key in path[1:]:
+        if isinstance(key, int):
+            obj = obj[key]
+        else:
+            obj = obj.get(key, "")
+    prompt = str(obj) if isinstance(obj, str) else ""
+    if fmt == "json":
+        import json
+
+        click.echo(json.dumps({"task": task_name, "sample": prompt}, indent=2))
+    else:
+        click.echo(f"Sample prompt for {task_name}:\n")
+        for line in prompt.split("\n"):
+            click.echo(f"  {line}")
 
 
 @main.command()

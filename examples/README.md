@@ -4,10 +4,11 @@ Three working examples showing how to use ResearchBench, all runnable in **mock
 mode** with no API key.
 
 | File | What it shows |
-|---|---|
+|---|---|---|
 | `evaluate_model.py` | The Python API: build a `Benchmark`, run one model, print verbose text + JSON. |
 | `run_cli_demo.sh` | The `researchbench run` / `compare` / `list` CLI flow (bash). |
 | `run_cli_demo.ps1` | The same CLI flow for Windows PowerShell. |
+| `demo.ipynb` | Jupyter notebook: full walkthrough, runnable in Binder with zero API keys. |
 
 ## Important: mock vs. real results
 

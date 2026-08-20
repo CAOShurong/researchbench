@@ -66,6 +66,69 @@ class TestShowCommand:
         assert "Unknown" in result.output
 
 
+class TestTasksCommand:
+    def test_tasks_text(self, runner):
+        result = runner.invoke(main, ["tasks"])
+        assert result.exit_code == 0
+        assert "paper_comprehension" in result.output
+        assert "dataset:" in result.output.lower()
+
+    def test_tasks_json(self, runner):
+        result = runner.invoke(main, ["tasks", "--format", "json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert isinstance(data, list)
+        assert len(data) == 7
+        assert data[0]["name"] == "paper_comprehension"
+        assert "dataset_size" in data[0]
+        assert data[0]["dataset_size"] > 0
+
+    def test_tasks_json_save(self, runner, tmp_path):
+        out = tmp_path / "tasks.json"
+        result = runner.invoke(main, ["tasks", "--format", "json", "--save", str(out)])
+        assert result.exit_code == 0
+        data = json.loads(out.read_text(encoding="utf-8"))
+        assert len(data) == 7
+
+
+class TestSampleCommand:
+    def test_sample_text(self, runner):
+        result = runner.invoke(main, ["sample", "paper_comprehension"])
+        assert result.exit_code == 0
+        assert "Sample prompt" in result.output
+        assert "architectural innovation" in result.output
+
+    def test_sample_json(self, runner):
+        result = runner.invoke(main, ["sample", "paper_comprehension", "--format", "json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["task"] == "paper_comprehension"
+        assert len(data["sample"]) > 0
+
+    def test_sample_unknown_task(self, runner):
+        result = runner.invoke(main, ["sample", "nope"])
+        assert result.exit_code == 0
+        assert "Unknown" in result.output
+
+    @pytest.mark.parametrize(
+        "task_name",
+        [
+            "paper_comprehension",
+            "idea_generation",
+            "literature_synthesis",
+            "experimental_design",
+            "peer_review",
+            "reproduction",
+            "open_question_id",
+        ],
+    )
+    def test_sample_all_tasks_non_empty(self, runner, task_name):
+        result = runner.invoke(main, ["sample", task_name, "--format", "json"])
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert len(data["sample"]) > 0, f"{task_name} sample is empty"
+
+
 class TestRunCommand:
     def test_run_text_default(self, runner):
         result = runner.invoke(main, ["run", "--model", "gpt-4o", "--tasks", "paper_comprehension"])
