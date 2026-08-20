@@ -418,3 +418,12 @@ class TestReportCommand:
     def test_report_missing_file(self, runner):
         result = runner.invoke(main, ["report", "--from", "nope.json"])
         assert result.exit_code != 0
+
+
+class TestVerifyCommand:
+    def test_verify_passes(self, runner):
+        result = runner.invoke(main, ["verify"])
+        assert result.exit_code == 0
+        assert "Verification" in result.output
+        assert "PASS" in result.output
+        assert "All 7 tasks" in result.output

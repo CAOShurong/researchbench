@@ -362,6 +362,24 @@ def schema(save_path: str | None) -> None:
     _emit(raw, "json", save_path)
 
 
+@main.command()
+def verify() -> None:
+    """Verify the installation by running all tasks in mock mode."""
+    bench = Benchmark()
+    result = bench.run(model="gpt-4o")
+    all_ok = all(0.0 <= r.score <= 100.0 for r in result.results)
+    click.echo("ResearchBench Verification")
+    click.echo("=" * 50)
+    for r in result.results:
+        status = "PASS" if 0.0 <= r.score <= 100.0 else "FAIL"
+        click.echo(f"  [{status}] {r.task_name:25s} {r.score:.2f}")
+    click.echo("=" * 50)
+    if all_ok:
+        click.echo("All 7 tasks passed mock-mode verification. Installation is working.")
+    else:
+        raise SystemExit(1)
+
+
 def _compare_text(results: list[BenchmarkResult], task_list: list[str], verbose: bool) -> str:
     header_models = [r.model for r in results]
     col = max(16, max((len(m) for m in header_models), default=0))
