@@ -348,6 +348,20 @@ def report(from_path: str, fmt: str, save_path: str | None, verbose: bool) -> No
     _emit(result.to_format(fmt, verbose=verbose), fmt, save_path)
 
 
+@main.command()
+@click.option("--save", "save_path", default=None, help="Write the schema to this file path.")
+def schema(save_path: str | None) -> None:
+    """Print the JSON Schema for the report format."""
+    import pathlib
+
+    schema_path = (
+        pathlib.Path(__file__).resolve().parent.parent.parent / "docs" / "report-schema.json"
+    )
+    with open(schema_path, encoding="utf-8") as f:
+        raw = f.read()
+    _emit(raw, "json", save_path)
+
+
 def _compare_text(results: list[BenchmarkResult], task_list: list[str], verbose: bool) -> str:
     header_models = [r.model for r in results]
     col = max(16, max((len(m) for m in header_models), default=0))
