@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -29,6 +30,43 @@ jobs:
       run: |
         ruff check src tests
         ruff format --check src tests
-    - name: Test
+    - name: Test (with coverage gate)
       run: |
-        pytest tests -v --tb=short
+        pytest tests --cov=researchbench --cov-report=term-missing --cov-fail-under=80
+
+  typecheck:
+    name: typecheck (mypy, py3.11)
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+    - name: mypy
+      run: mypy src
+
+  build:
+    name: build + clean-install smoke test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Install build
+      run: pip install build
+    - name: Build sdist and wheel
+      run: python -m build
+    - name: Install wheel in clean venv and smoke test
+      run: |
+        python -m venv /tmp/rb-venv
+        /tmp/rb-venv/bin/python -m pip install dist/*.whl
+        /tmp/rb-venv/bin/researchbench --version
+        /tmp/rb-venv/bin/researchbench list
+        /tmp/rb-venv/bin/researchbench run --tasks paper_comprehension --model gpt-4o --format json

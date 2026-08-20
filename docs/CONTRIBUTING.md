@@ -32,15 +32,20 @@ Everything must be green before submitting a PR.
 
 ```bash
 ruff check src tests                    # lint
-ruff format --check src tests           # formatting (run `ruff format` to fix)
+ruff format --check src tests            # formatting (run `ruff format` to fix)
 mypy src                                # static types
 pytest tests -v                         # test suite
-pytest --cov=researchbench tests        # coverage (optional)
+pytest --cov=researchbench --cov-fail-under=80   # coverage gate (CI enforced)
 ```
 
-The GitHub Actions CI (`.github/workflows/ci.yml`) runs ruff check + format and
-pytest on Ubuntu and Windows for Python 3.9, 3.11 and 3.13. It also verifies the
-package installs with `pip install -e ".[dev]"`.
+The GitHub Actions CI (`.github/workflows/ci.yml`) runs:
+
+- **test** job: ruff check + format and pytest with an 80% coverage gate, on
+  Ubuntu and Windows for Python 3.9, 3.11 and 3.13.
+- **typecheck** job: `mypy src` on Python 3.11.
+- **build** job: builds the sdist and wheel with `python -m build`, installs the
+  wheel into a clean virtualenv, and smoke-tests `researchbench --version`,
+  `list` and `run --format json`.
 
 ## Testing
 
