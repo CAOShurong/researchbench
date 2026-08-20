@@ -269,6 +269,16 @@ class TestRunCommand:
         assert "s" in result.stderr
         assert "paper_comprehension" in result.stderr
 
+    def test_run_quiet(self, runner):
+        normal = runner.invoke(main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o"])
+        quiet = runner.invoke(
+            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--quiet"]
+        )
+        assert quiet.exit_code == 0
+        assert "ResearchBench" in normal.output
+        assert "ResearchBench" not in quiet.output
+        assert "AVERAGE" in quiet.output  # score still shown
+
 
 class TestCompareCommand:
     def test_compare_text_table(self, runner):

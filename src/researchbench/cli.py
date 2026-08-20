@@ -272,6 +272,9 @@ def _show_dry_run(task_list: list[str]) -> None:
     "--dry-run", is_flag=True, default=False, help="Show tasks and data sizes without evaluating."
 )
 @click.option("--benchmark", is_flag=True, default=False, help="Print per-task timing (stderr).")
+@click.option(
+    "--quiet", is_flag=True, default=False, help="Suppress the report banner (text output only)."
+)
 def run(
     tasks: str,
     ignore: str,
@@ -281,6 +284,7 @@ def run(
     verbose: bool,
     dry_run: bool,
     benchmark: bool,
+    quiet: bool,
 ) -> None:
     """Run the benchmark against a single model."""
     task_list = _resolve_tasks(tasks, ignore=ignore)
@@ -300,7 +304,7 @@ def run(
         result.results.append(TaskResult(task_name=name, model=model, score=score, details=details))
         if benchmark:
             click.echo(f"  [{name}] {elapsed:.3f}s", err=True)
-    _emit(result.to_format(fmt, verbose=verbose), fmt, save_path)
+    _emit(result.to_format(fmt, verbose=verbose, quiet=quiet), fmt, save_path)
 
 
 @main.command()

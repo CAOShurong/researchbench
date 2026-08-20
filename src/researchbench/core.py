@@ -30,14 +30,16 @@ class BenchmarkResult:
             return 0.0
         return sum(r.score for r in self.results) / len(self.results)
 
-    def to_text(self, verbose: bool = False) -> str:
+    def to_text(self, verbose: bool = False, quiet: bool = False) -> str:
         """Human-readable report.
 
         When ``verbose`` is True, each task's ``details`` dict is rendered so a
         reader can inspect keyword coverage, flaws found, etc.
+        When ``quiet`` is True the header banner is omitted (useful for scripting).
         """
-        lines = [f"ResearchBench Results: {self.model}"]
-        lines.append("=" * 60)
+        lines = [] if quiet else [f"ResearchBench Results: {self.model}"]
+        if not quiet:
+            lines.append("=" * 60)
         for r in self.results:
             lines.append(f"  {r.task_name:25s}: {r.score:6.2f}")
             if verbose and r.details:
@@ -108,13 +110,13 @@ class BenchmarkResult:
 </body>
 </html>"""
 
-    def to_format(self, fmt: str, verbose: bool = False) -> str:
+    def to_format(self, fmt: str, verbose: bool = False, quiet: bool = False) -> str:
         """Render the result in ``text``, ``json`` or ``html`` format."""
         if fmt == "json":
             return self.to_json()
         if fmt == "html":
             return self.to_html()
-        return self.to_text(verbose=verbose)
+        return self.to_text(verbose=verbose, quiet=quiet)
 
 
 class Benchmark:
