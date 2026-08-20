@@ -255,7 +255,7 @@ def run(
     "--model",
     "models",
     multiple=True,
-    required=True,
+    required=False,
     help="Model to evaluate (repeatable, e.g. --model gpt-4o --model claude-3-opus).",
 )
 @click.option("--tasks", default="all", help="Comma-separated task names or 'all'.")
@@ -286,6 +286,8 @@ def compare(
     if dry_run:
         _show_dry_run(task_list)
         return
+    if not models:
+        raise click.BadParameter("At least one --model is required unless --dry-run is used.")
     bench = Benchmark(tasks=task_list)
     results = bench.compare(models=list(models))
 
@@ -310,6 +312,40 @@ def compare(
         return
 
     _emit(_compare_text(results, task_list, verbose=verbose), fmt, save_path)
+
+
+@main.command()
+@click.option("--from", "from_path", required=True, help="JSON results file to re-render.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(FORMATS, case_sensitive=False),
+    default="text",
+    help="Output format.",
+)
+@click.option("--save", "save_path", default=None, help="Write the report to this file path.")
+@click.option("--verbose", is_flag=True, default=False, help="Show per-task detail breakdown.")
+def report(from_path: str, fmt: str, save_path: str | None, verbose: bool) -> None:
+    """Re-render a saved JSON results file as text or HTML."""
+    import json
+
+    from researchbench import BenchmarkResult, TaskResult
+
+    with open(from_path, encoding="utf-8") as f:
+        data = json.load(f)
+    result = BenchmarkResult(
+        model=data["model"],
+        results=[
+            TaskResult(
+                task_name=r["task"],
+                model=data["model"],
+                score=r["score"],
+                details=r.get("details", {}),
+            )
+            for r in data["results"]
+        ],
+    )
+    _emit(result.to_format(fmt, verbose=verbose), fmt, save_path)
 
 
 def _compare_text(results: list[BenchmarkResult], task_list: list[str], verbose: bool) -> str:

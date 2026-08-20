@@ -355,3 +355,66 @@ class TestCompareCommand:
         assert "Dry run" in result.output
         assert "paper_comprehension" in result.output
         assert "item(s)" in result.output
+
+    def test_compare_dry_run_no_model(self, runner):
+        """--dry-run should not require --model."""
+        result = runner.invoke(main, ["compare", "--tasks", "all", "--dry-run"])
+        assert result.exit_code == 0
+        assert "Dry run" in result.output
+
+    def test_compare_requires_model_without_dry_run(self, runner):
+        result = runner.invoke(main, ["compare", "--tasks", "all"])
+        assert result.exit_code != 0
+        assert "model" in result.output.lower() or "required" in result.output.lower()
+
+
+class TestReportCommand:
+    def test_report_text(self, runner, tmp_path):
+        # Run a benchmark first, save JSON, then re-render as text.
+        out = tmp_path / "results.json"
+        runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--format",
+                "json",
+                "--save",
+                str(out),
+            ],
+        )
+        result = runner.invoke(main, ["report", "--from", str(out)])
+        assert result.exit_code == 0
+        assert "ResearchBench" in result.output
+        assert "AVERAGE" in result.output
+
+    def test_report_html(self, runner, tmp_path):
+        src = tmp_path / "src.json"
+        dst = tmp_path / "out.html"
+        runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--format",
+                "json",
+                "--save",
+                str(src),
+            ],
+        )
+        result = runner.invoke(
+            main, ["report", "--from", str(src), "--format", "html", "--save", str(dst)]
+        )
+        assert result.exit_code == 0
+        assert dst.exists()
+        assert "<!doctype html>" in dst.read_text(encoding="utf-8").lower()
+
+    def test_report_missing_file(self, runner):
+        result = runner.invoke(main, ["report", "--from", "nope.json"])
+        assert result.exit_code != 0
