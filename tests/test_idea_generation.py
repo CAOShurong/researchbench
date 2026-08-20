@@ -3,14 +3,15 @@
 Covers: fixture structure, the novelty/feasibility/length weighted scoring,
 generic-phrase penalty, empty floor, and the no-API-key mock fallback.
 """
+
 import pytest
 
 from researchbench.tasks import idea_generation as ig
 from researchbench.tasks.idea_generation import (
-    IdeaGeneration,
     CONTEXTS,
-    NOVELTY_KEYWORDS,
     FEASIBILITY_KEYWORDS,
+    NOVELTY_KEYWORDS,
+    IdeaGeneration,
 )
 
 
@@ -38,9 +39,9 @@ class TestFixtureStructure:
 
     def test_each_context_has_required_keys(self):
         for ctx in CONTEXTS:
-            assert "id" in ctx and ctx["id"]
-            assert "description" in ctx and ctx["description"]
-            assert "question" in ctx and ctx["question"]
+            assert ctx.get("id")
+            assert ctx.get("description")
+            assert ctx.get("question")
 
     def test_keyword_lists_non_empty(self):
         assert len(NOVELTY_KEYWORDS) >= 1
@@ -84,7 +85,9 @@ class TestScoringLogic:
 
     def test_length_capped_at_one(self, task, monkeypatch):
         # Very long response should not inflate length_score beyond its weight.
-        monkeypatch.setattr(ig, "_call_model", lambda model, prompt: _perfect_response() + " " * 5000)
+        monkeypatch.setattr(
+            ig, "_call_model", lambda model, prompt: _perfect_response() + " " * 5000
+        )
         score, _ = task.evaluate(model="gpt-4o")
         assert score == pytest.approx(100.0)
 

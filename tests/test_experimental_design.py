@@ -1,8 +1,9 @@
 """Detailed unit tests for the ExperimentalDesign task."""
+
 import pytest
 
 from researchbench.tasks import experimental_design as ed
-from researchbench.tasks.experimental_design import ExperimentalDesign, HYPOTHESES
+from researchbench.tasks.experimental_design import HYPOTHESES, ExperimentalDesign
 
 SECTION_WORDS = ["control", "sample", "statistical", "confound", "interpret"]
 
@@ -29,9 +30,9 @@ class TestFixtureStructure:
 
     def test_each_hypothesis_has_required_keys(self):
         for h in HYPOTHESES:
-            assert "id" in h and h["id"]
-            assert "hypothesis" in h and h["hypothesis"]
-            assert "question" in h and h["question"]
+            assert h.get("id")
+            assert h.get("hypothesis")
+            assert h.get("question")
             assert "keywords" in h and len(h["keywords"]) >= 1
 
 

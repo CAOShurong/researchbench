@@ -1,8 +1,9 @@
 """Detailed unit tests for the PeerReview task."""
+
 import pytest
 
 from researchbench.tasks import peer_review as pr
-from researchbench.tasks.peer_review import PeerReview, MOCK_SUBMISSIONS, _flaw_in_response
+from researchbench.tasks.peer_review import MOCK_SUBMISSIONS, PeerReview, _flaw_in_response
 
 
 def _perfect_response() -> str:
@@ -31,17 +32,19 @@ class TestFixtureStructure:
 
     def test_each_submission_has_required_keys(self):
         for sub in MOCK_SUBMISSIONS:
-            assert "id" in sub and sub["id"]
-            assert "title" in sub and sub["title"]
-            assert "abstract" in sub and sub["abstract"]
+            assert sub.get("id")
+            assert sub.get("title")
+            assert sub.get("abstract")
             assert "known_flaws" in sub and len(sub["known_flaws"]) >= 1
-            assert "question" in sub and sub["question"]
+            assert sub.get("question")
             assert "keywords" in sub and len(sub["keywords"]) >= 1
 
 
 class TestFlawMatching:
     def test_flaw_match_when_two_words_present(self):
-        assert _flaw_in_response("No statistical significance testing", "statistical significance here")
+        assert _flaw_in_response(
+            "No statistical significance testing", "statistical significance here"
+        )
 
     def test_flaw_no_match_when_one_word(self):
         assert not _flaw_in_response("No statistical significance testing", "only statistical here")
@@ -63,13 +66,17 @@ class TestScoringLogic:
         assert score == pytest.approx(6.0)
 
     def test_no_recommendation_lowers_score(self, task, monkeypatch):
-        perfect = _perfect_response().replace("accept", "").replace("reject", "").replace("revision", "")
+        perfect = (
+            _perfect_response().replace("accept", "").replace("reject", "").replace("revision", "")
+        )
         monkeypatch.setattr(pr, "_call_model", lambda model, prompt: perfect)
         score, _ = task.evaluate(model="gpt-4o")
         assert score < 100.0
 
     def test_partial_response_partial_score(self, task, monkeypatch):
-        monkeypatch.setattr(pr, "_call_model", lambda model, prompt: "statistical significance baseline accept")
+        monkeypatch.setattr(
+            pr, "_call_model", lambda model, prompt: "statistical significance baseline accept"
+        )
         score, _ = task.evaluate(model="gpt-4o")
         assert 0.0 < score < 100.0
 

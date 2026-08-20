@@ -1,8 +1,9 @@
 """Detailed unit tests for the Reproduction task."""
+
 import pytest
 
 from researchbench.tasks import reproduction as rp
-from researchbench.tasks.reproduction import Reproduction, SCENARIOS
+from researchbench.tasks.reproduction import SCENARIOS, Reproduction
 
 
 def _perfect_response() -> str:
@@ -27,9 +28,9 @@ class TestFixtureStructure:
 
     def test_each_scenario_has_required_keys(self):
         for sc in SCENARIOS:
-            assert "id" in sc and sc["id"]
-            assert "description" in sc and sc["description"]
-            assert "question" in sc and sc["question"]
+            assert sc.get("id")
+            assert sc.get("description")
+            assert sc.get("question")
             assert "keywords" in sc and len(sc["keywords"]) >= 1
             assert "key_causes" in sc and len(sc["key_causes"]) >= 1
 
@@ -61,7 +62,7 @@ class TestScoringLogic:
     def test_diagnosis_word_variants(self, task, monkeypatch):
         for word in ["check", "compare", "investigate", "test"]:
             resp = _perfect_response().replace("diagnose", word)
-            monkeypatch.setattr(rp, "_call_model", lambda model, prompt, w=word: resp)
+            monkeypatch.setattr(rp, "_call_model", lambda model, prompt, w=word, r=resp: r)
             score, _ = task.evaluate(model="gpt-4o")
             assert score == pytest.approx(100.0)
 

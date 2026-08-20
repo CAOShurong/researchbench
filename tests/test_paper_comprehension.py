@@ -4,10 +4,11 @@ Covers: fixture structure, scoring logic with controlled model responses
 (keyword coverage and the 1.5x weight cap), the empty-response floor, and the
 no-API-key mock fallback path.
 """
+
 import pytest
 
 from researchbench.tasks import paper_comprehension as pc
-from researchbench.tasks.paper_comprehension import PaperComprehension, PAPERS
+from researchbench.tasks.paper_comprehension import PAPERS, PaperComprehension
 
 
 def _perfect_response() -> str:
@@ -35,14 +36,14 @@ class TestFixtureStructure:
     def test_each_paper_has_required_keys(self):
         for paper in PAPERS:
             assert "id" in paper and isinstance(paper["id"], str) and paper["id"]
-            assert "title" in paper and paper["title"]
-            assert "abstract" in paper and paper["abstract"]
+            assert paper.get("title")
+            assert paper.get("abstract")
             assert "questions" in paper and len(paper["questions"]) >= 1
 
     def test_each_question_has_keywords(self):
         for paper in PAPERS:
             for q in paper["questions"]:
-                assert "q" in q and q["q"]
+                assert q.get("q")
                 assert "reference_keywords" in q
                 assert isinstance(q["reference_keywords"], list)
                 assert len(q["reference_keywords"]) >= 1
@@ -51,7 +52,7 @@ class TestFixtureStructure:
 class TestScoringLogic:
     def test_perfect_response_scores_100(self, task, monkeypatch):
         monkeypatch.setattr(pc, "_call_model", lambda model, prompt: _perfect_response())
-        score, details = task.evaluate(model="gpt-4o")
+        score, _ = task.evaluate(model="gpt-4o")
         assert score == pytest.approx(100.0)
 
     def test_empty_response_scores_zero(self, task, monkeypatch):
@@ -69,7 +70,7 @@ class TestScoringLogic:
     def test_correctness_capped_at_one(self, task, monkeypatch):
         """The 1.5x weight must never let a single question exceed 1.0."""
         monkeypatch.setattr(pc, "_call_model", lambda model, prompt: _perfect_response())
-        score, details = task.evaluate(model="gpt-4o")
+        _, details = task.evaluate(model="gpt-4o")
         for paper in PAPERS:
             per = details["per_paper"][paper["id"]]
             assert per["score"] <= per["max"]

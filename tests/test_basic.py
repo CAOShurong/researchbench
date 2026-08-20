@@ -1,18 +1,24 @@
 """Tests for ResearchBench."""
-import pytest
+
 from researchbench import Benchmark
-from researchbench.tasks.paper_comprehension import PaperComprehension
+from researchbench.tasks.experimental_design import ExperimentalDesign
 from researchbench.tasks.idea_generation import IdeaGeneration
 from researchbench.tasks.literature_synthesis import LiteratureSynthesis
-from researchbench.tasks.experimental_design import ExperimentalDesign
+from researchbench.tasks.open_question_id import OpenQuestionId
+from researchbench.tasks.paper_comprehension import PaperComprehension
 from researchbench.tasks.peer_review import PeerReview
 from researchbench.tasks.reproduction import Reproduction
-from researchbench.tasks.open_question_id import OpenQuestionId
 
 ALL_TASK_CLASSES = [
-    PaperComprehension, IdeaGeneration, LiteratureSynthesis,
-    ExperimentalDesign, PeerReview, Reproduction, OpenQuestionId,
+    PaperComprehension,
+    IdeaGeneration,
+    LiteratureSynthesis,
+    ExperimentalDesign,
+    PeerReview,
+    Reproduction,
+    OpenQuestionId,
 ]
+
 
 class TestTaskInterface:
     def test_all_tasks_have_evaluate(self):
@@ -36,6 +42,7 @@ class TestTaskInterface:
             task = cls()
             score, _ = task.evaluate(model="mock")
             assert 0.0 <= score <= 100.0, f"{cls.__name__} score {score} outside [0, 100]"
+
 
 class TestBenchmark:
     def test_benchmark_creates_tasks(self):

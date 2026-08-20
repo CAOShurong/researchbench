@@ -1,53 +1,99 @@
-"""ResearchBench CLI - run, list, and explore the benchmark."""
-import click
+"""ResearchBench CLI - run, list, show, and compare benchmark evaluations."""
+
+from __future__ import annotations
+
 import json
+
+import click
+
 from researchbench import Benchmark
-from researchbench.tasks import PaperComprehension, IdeaGeneration, LiteratureSynthesis, ExperimentalDesign, PeerReview, Reproduction, OpenQuestionId
+from researchbench.core import BenchmarkResult
+from researchbench.tasks import (
+    ExperimentalDesign,
+    IdeaGeneration,
+    LiteratureSynthesis,
+    OpenQuestionId,
+    PaperComprehension,
+    PeerReview,
+    Reproduction,
+)
 
 TASK_INFO = {
-    "paper_comprehension": {"class": PaperComprehension, "desc": "Test deep understanding of research papers, methodology critique, and limitation identification."},
-    "idea_generation": {"class": IdeaGeneration, "desc": "Test ability to generate novel research hypotheses from gap analysis."},
-    "literature_synthesis": {"class": LiteratureSynthesis, "desc": "Test ability to synthesize multiple papers and identify trends."},
-    "experimental_design": {"class": ExperimentalDesign, "desc": "Test ability to design valid experiments with controls and statistics."},
-    "peer_review": {"class": PeerReview, "desc": "Test ability to provide constructive, technically sound peer review."},
-    "reproduction": {"class": Reproduction, "desc": "Test ability to diagnose and fix reproduction failures."},
-    "open_question_id": {"class": OpenQuestionId, "desc": "Test ability to identify important open research questions."},
+    "paper_comprehension": {
+        "class": PaperComprehension,
+        "desc": "Test deep understanding of research papers, methodology critique, "
+        "and limitation identification.",
+    },
+    "idea_generation": {
+        "class": IdeaGeneration,
+        "desc": "Test ability to generate novel research hypotheses from gap analysis.",
+    },
+    "literature_synthesis": {
+        "class": LiteratureSynthesis,
+        "desc": "Test ability to synthesize multiple papers and identify trends.",
+    },
+    "experimental_design": {
+        "class": ExperimentalDesign,
+        "desc": "Test ability to design valid experiments with controls and statistics.",
+    },
+    "peer_review": {
+        "class": PeerReview,
+        "desc": "Test ability to provide constructive, technically sound peer review.",
+    },
+    "reproduction": {
+        "class": Reproduction,
+        "desc": "Test ability to diagnose and fix reproduction failures.",
+    },
+    "open_question_id": {
+        "class": OpenQuestionId,
+        "desc": "Test ability to identify important open research questions.",
+    },
 }
 
-@click.group()
-def main():
-    pass
+FORMATS = ["text", "json", "html"]
 
-@main.command()
-def list():
+
+def _resolve_tasks(tasks: str) -> list[str]:
+    if tasks == "all":
+        return list(TASK_INFO.keys())
+    requested = [t.strip() for t in tasks.split(",") if t.strip()]
+    unknown = [t for t in requested if t not in TASK_INFO]
+    if unknown:
+        raise click.BadParameter(
+            f"Unknown task(s): {', '.join(unknown)}. Available: {', '.join(TASK_INFO.keys())}"
+        )
+    return requested
+
+
+def _emit(report: str, fmt: str, save_path: str | None) -> None:
+    """Print the report, or write it to ``save_path``."""
+    if save_path:
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(report)
+        click.echo(f"Report saved to {save_path} ({fmt})")
+    else:
+        click.echo(report)
+
+
+@click.group()
+@click.version_option(package_name="researchbench", prog_name="researchbench")
+def main() -> None:
+    """ResearchBench: a benchmark for AI academic and research capabilities."""
+
+
+@main.command("list")
+def list_cmd() -> None:
     """List all available tasks."""
     click.echo("ResearchBench Tasks:")
-    click.echo("=" * 60)
+    click.echo("=" * 70)
     for name, info in TASK_INFO.items():
         click.echo(f"  {name:25s} {info['desc']}")
 
-@main.command()
-@click.option("--tasks", default="all", help="Comma-separated task names or 'all'")
-@click.option("--model", default="gpt-4o", help="Model to evaluate")
-@click.option("--output", default=None, help="Output JSON file path")
-def run(tasks, model, output):
-    """Run the benchmark."""
-    if tasks == "all":
-        task_list = list(TASK_INFO.keys())
-    else:
-        task_list = [t.strip() for t in tasks.split(",")]
-    bench = Benchmark(tasks=task_list)
-    result = bench.run(model=model)
-    click.echo(result.summary())
-    if output:
-        with open(output, "w") as f:
-            f.write(result.to_json())
-        click.echo(f"Results saved to {output}")
 
 @main.command()
 @click.argument("task_name")
-def show(task_name):
-    """Show task description and sample."""
+def show(task_name: str) -> None:
+    """Show a task's description and dataset size."""
     if task_name not in TASK_INFO:
         click.echo(f"Unknown task: {task_name}")
         click.echo("Available: " + ", ".join(TASK_INFO.keys()))
@@ -55,9 +101,161 @@ def show(task_name):
     info = TASK_INFO[task_name]
     click.echo(f"Task: {task_name}")
     click.echo(f"Description: {info['desc']}")
-    from researchbench.tasks.paper_comprehension import PAPERS
-    if hasattr(PAPERS, '__len__') and len(PAPERS) > 0:
-        click.echo(f"\nSample data: {len(PAPERS)} papers loaded")
+    module = info["class"]
+    try:
+        instance = module()
+    except TypeError:
+        instance = module
+    for attr in (
+        "PAPERS",
+        "CONTEXTS",
+        "SYNTHESIS_SETS",
+        "HYPOTHESES",
+        "MOCK_SUBMISSIONS",
+        "SCENARIOS",
+        "PAPER_SETS",
+    ):
+        data = getattr(module, attr, None) or getattr(instance, attr, None)
+        if data is not None:
+            click.echo(f"\nDataset ({attr}): {len(data)} item(s)")
+            break
+
+
+@main.command()
+@click.option("--tasks", default="all", help="Comma-separated task names or 'all'.")
+@click.option("--model", default="gpt-4o", help="Model to evaluate.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(FORMATS, case_sensitive=False),
+    default="text",
+    help="Report format.",
+)
+@click.option("--save", "save_path", default=None, help="Write the report to this file path.")
+@click.option("--verbose", is_flag=True, default=False, help="Show per-task detail breakdown.")
+def run(tasks: str, model: str, fmt: str, save_path: str | None, verbose: bool) -> None:
+    """Run the benchmark against a single model."""
+    task_list = _resolve_tasks(tasks)
+    bench = Benchmark(tasks=task_list)
+    result = bench.run(model=model)
+    _emit(result.to_format(fmt, verbose=verbose), fmt, save_path)
+
+
+@main.command()
+@click.option(
+    "--model",
+    "models",
+    multiple=True,
+    required=True,
+    help="Model to evaluate (repeatable, e.g. --model gpt-4o --model claude-3-opus).",
+)
+@click.option("--tasks", default="all", help="Comma-separated task names or 'all'.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(FORMATS, case_sensitive=False),
+    default="text",
+    help="Report format (text shows a comparison table).",
+)
+@click.option("--save", "save_path", default=None, help="Write the report to this file path.")
+@click.option(
+    "--verbose", is_flag=True, default=False, help="Show per-task detail breakdown per model."
+)
+def compare(
+    models: tuple[str, ...], tasks: str, fmt: str, save_path: str | None, verbose: bool
+) -> None:
+    """Compare multiple models on the same tasks."""
+    task_list = _resolve_tasks(tasks)
+    bench = Benchmark(tasks=task_list)
+    results = bench.compare(models=list(models))
+
+    if fmt == "json":
+        payload = {
+            "tasks": task_list,
+            "models": [r.model for r in results],
+            "results": [
+                {
+                    "model": r.model,
+                    "average": round(r.average(), 4),
+                    "per_task": {x.task_name: x.score for x in r.results},
+                }
+                for r in results
+            ],
+        }
+        _emit(json.dumps(payload, indent=2), fmt, save_path)
+        return
+
+    if fmt == "html":
+        _emit(_compare_html(results, task_list), fmt, save_path)
+        return
+
+    _emit(_compare_text(results, task_list, verbose=verbose), fmt, save_path)
+
+
+def _compare_text(results: list[BenchmarkResult], task_list: list[str], verbose: bool) -> str:
+    header_models = [r.model for r in results]
+    col = max(16, max((len(m) for m in header_models), default=0))
+    lines = ["ResearchBench Comparison", "=" * 70]
+    lines.append(f"  {'task':25s} " + " ".join(f"{m:>{col}s}" for m in header_models))
+    lines.append("  " + "-" * (25 + (col + 1) * len(header_models)))
+    for task in task_list:
+        cells = []
+        for r in results:
+            match = next((x.score for x in r.results if x.task_name == task), float("nan"))
+            cells.append(f"{match:>{col}.2f}")
+        lines.append(f"  {task:25s} " + " ".join(cells))
+    lines.append("  " + "-" * (25 + (col + 1) * len(header_models)))
+    avg_cells = [f"{r.average():>{col}.2f}" for r in results]
+    lines.append(f"  {'AVERAGE':25s} " + " ".join(avg_cells))
+    if verbose:
+        for r in results:
+            lines.append("")
+            lines.append(f"  [{r.model}] details:")
+            for x in r.results:
+                lines.append(f"    {x.task_name}: {x.details}")
+    return "\n".join(lines)
+
+
+def _compare_html(results: list[BenchmarkResult], task_list: list[str]) -> str:
+    import html
+
+    def cell(score: float) -> str:
+        return f"<td style='text-align:right'>{score:.2f}</td>"
+
+    head = "".join(f"<th>{html.escape(r.model)}</th>" for r in results)
+    rows = []
+    for task in task_list:
+        cells = []
+        for r in results:
+            s = next((x.score for x in r.results if x.task_name == task), float("nan"))
+            cells.append(cell(s))
+        rows.append(f"<tr><td>{html.escape(task)}</td>{''.join(cells)}</tr>")
+    avg_cells = "".join(cell(r.average()) for r in results)
+    rows.append(f"<tr><td><b>AVERAGE</b></td>{avg_cells}</tr>")
+    rows_html = "\n".join(rows)
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ResearchBench Comparison</title>
+<style>
+  body {{ font-family: -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; color: #1f2933; }}
+  table {{ border-collapse: collapse; width: 100%; }}
+  th, td {{ border: 1px solid #d2d6dc; padding: 0.45rem 0.6rem; }}
+  th {{ background: #f4f6f9; }}
+</style>
+</head>
+<body>
+<h1>ResearchBench Comparison</h1>
+<table>
+<thead><tr><th>Task</th>{head}</tr></thead>
+<tbody>
+{rows_html}
+</tbody>
+</table>
+</body>
+</html>"""
+
 
 if __name__ == "__main__":
     main()

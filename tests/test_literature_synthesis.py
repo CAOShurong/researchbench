@@ -1,8 +1,9 @@
 """Detailed unit tests for the LiteratureSynthesis task."""
+
 import pytest
 
 from researchbench.tasks import literature_synthesis as ls
-from researchbench.tasks.literature_synthesis import LiteratureSynthesis, SYNTHESIS_SETS
+from researchbench.tasks.literature_synthesis import SYNTHESIS_SETS, LiteratureSynthesis
 
 
 def _perfect_response() -> str:
@@ -27,9 +28,9 @@ class TestFixtureStructure:
 
     def test_each_set_has_required_keys(self):
         for sset in SYNTHESIS_SETS:
-            assert "id" in sset and sset["id"]
+            assert sset.get("id")
             assert "papers" in sset and len(sset["papers"]) >= 1
-            assert "question" in sset and sset["question"]
+            assert sset.get("question")
             assert "keywords" in sset and len(sset["keywords"]) >= 1
 
 

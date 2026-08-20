@@ -1,4 +1,5 @@
 """Peer review task: evaluate ability to write constructive peer reviews."""
+
 from typing import Any
 
 MOCK_SUBMISSIONS = [
@@ -15,7 +16,19 @@ MOCK_SUBMISSIONS = [
             "No ablation study to isolate the contribution of the attention mechanism",
         ],
         "question": "Write a peer review of this paper. Identify at least 3 specific weaknesses, suggest concrete improvements, and give an overall recommendation (accept, minor revision, major revision, reject).",
-        "keywords": ["statistical significance", "baseline", "limited", "generalization", "ablation", "improvement", "margin", "comparison", "compute", "robustness", "reproducibility"],
+        "keywords": [
+            "statistical significance",
+            "baseline",
+            "limited",
+            "generalization",
+            "ablation",
+            "improvement",
+            "margin",
+            "comparison",
+            "compute",
+            "robustness",
+            "reproducibility",
+        ],
     },
     {
         "id": "missing-details",
@@ -30,48 +43,81 @@ MOCK_SUBMISSIONS = [
             "No confidence calibration or uncertainty quantification",
         ],
         "question": "Write a peer review of this paper. Identify at least 3 specific weaknesses, suggest concrete improvements, and give an overall recommendation.",
-        "keywords": ["baseline", "supervised", "dataset", "reproducibility", "ethical", "error analysis", "calibration", "uncertainty", "limitation", "clinical", "validation"],
+        "keywords": [
+            "baseline",
+            "supervised",
+            "dataset",
+            "reproducibility",
+            "ethical",
+            "error analysis",
+            "calibration",
+            "uncertainty",
+            "limitation",
+            "clinical",
+            "validation",
+        ],
     },
 ]
+
 
 class PeerReview:
     def evaluate(self, model: str = "gpt-4o", **kwargs) -> tuple[float, dict[str, Any]]:
         total = 0.0
         details = {}
         for sub in MOCK_SUBMISSIONS:
-            raw = _call_model(model, f"Paper: {sub['title']}\nAbstract: {sub['abstract']}\n\nTask: {sub['question']}")
+            raw = _call_model(
+                model,
+                f"Paper: {sub['title']}\nAbstract: {sub['abstract']}\n\nTask: {sub['question']}",
+            )
             flaws_found = sum(1 for flaw in sub["known_flaws"] if _flaw_in_response(flaw, raw))
             kw_count = sum(1 for kw in sub["keywords"] if kw.lower() in raw.lower())
-            has_recommendation = any(r in raw.lower() for r in ["accept", "reject", "revision", "revise"])
+            has_recommendation = any(
+                r in raw.lower() for r in ["accept", "reject", "revision", "revise"]
+            )
             flaw_score = min(flaws_found / len(sub["known_flaws"]) * 1.5, 1.0)
             kw_score = min(kw_count / len(sub["keywords"]) * 1.5, 1.0)
             rec_score = 1.0 if has_recommendation else 0.3
             score = (flaw_score * 0.5 + kw_score * 0.3 + rec_score * 0.2) * 100
             total += score
-            details[sub["id"]] = {"score": round(score, 1), "flaws_found": flaws_found, "total_flaws": len(sub["known_flaws"]), "has_recommendation": has_recommendation, "length": len(raw)}
+            details[sub["id"]] = {
+                "score": round(score, 1),
+                "flaws_found": flaws_found,
+                "total_flaws": len(sub["known_flaws"]),
+                "has_recommendation": has_recommendation,
+                "length": len(raw),
+            }
         avg = total / len(MOCK_SUBMISSIONS)
         return avg, {"per_paper": details, "average": round(avg, 1)}
+
 
 def _flaw_in_response(flaw: str, response: str) -> bool:
     key_parts = flaw.lower().split()
     return sum(1 for p in key_parts if p in response.lower()) >= 2
 
+
 def _call_model(model: str, prompt: str) -> str:
     import os
-    if model.startswith("gpt") or model.startswith("openai"):
+
+    if model.startswith(("gpt", "openai")):
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
             return "This paper makes a modest contribution. The 0.2% improvement over SOTA is not statistically significant. The evaluation is limited to 3 sentiment datasets, raising questions about generalization. Major revision recommended: add significance testing, more diverse datasets, and ablation studies."
         from openai import OpenAI
+
         client = OpenAI(api_key=api_key)
-        r = client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt}], max_tokens=1024)
+        r = client.chat.completions.create(
+            model=model, messages=[{"role": "user", "content": prompt}], max_tokens=1024
+        )
         return r.choices[0].message.content or ""
     elif "claude" in model:
         api_key = os.environ.get("ANTHROPIC_API_KEY")
         if not api_key:
             return "The paper lacks comparison to supervised baselines. Dataset details are insufficient for reproducibility. Ethical considerations of medical AI without training data are not discussed. Major revision required."
         import anthropic
+
         client = anthropic.Anthropic(api_key=api_key)
-        r = client.messages.create(model=model, max_tokens=1024, messages=[{"role": "user", "content": prompt}])
+        r = client.messages.create(
+            model=model, max_tokens=1024, messages=[{"role": "user", "content": prompt}]
+        )
         return r.content[0].text
     return "Mock peer review for evaluation."

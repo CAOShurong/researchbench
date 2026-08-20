@@ -1,8 +1,9 @@
 """Detailed unit tests for the OpenQuestionId task."""
+
 import pytest
 
 from researchbench.tasks import open_question_id as oq
-from researchbench.tasks.open_question_id import OpenQuestionId, PAPER_SETS
+from researchbench.tasks.open_question_id import PAPER_SETS, OpenQuestionId
 
 
 def _perfect_response() -> str:
@@ -29,9 +30,9 @@ class TestFixtureStructure:
 
     def test_each_set_has_required_keys(self):
         for ps in PAPER_SETS:
-            assert "id" in ps and ps["id"]
+            assert ps.get("id")
             assert "papers" in ps and len(ps["papers"]) >= 1
-            assert "question" in ps and ps["question"]
+            assert ps.get("question")
             assert "keywords" in ps and len(ps["keywords"]) >= 1
 
 
@@ -55,7 +56,7 @@ class TestScoringLogic:
     def test_importance_word_variants(self, task, monkeypatch):
         for word in ["critical", "key", "fundamental", "crucial"]:
             resp = _perfect_response().replace("important", word)
-            monkeypatch.setattr(oq, "_call_model", lambda model, prompt, w=word: resp)
+            monkeypatch.setattr(oq, "_call_model", lambda model, prompt, w=word, r=resp: r)
             score, _ = task.evaluate(model="gpt-4o")
             assert score == pytest.approx(100.0)
 
