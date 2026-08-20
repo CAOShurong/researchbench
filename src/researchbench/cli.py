@@ -68,8 +68,11 @@ def _resolve_tasks(tasks: str) -> list[str]:
 def _emit(report: str, fmt: str, save_path: str | None) -> None:
     """Print the report, or write it to ``save_path``."""
     if save_path:
-        with open(save_path, "w", encoding="utf-8") as f:
-            f.write(report)
+        try:
+            with open(save_path, "w", encoding="utf-8") as f:
+                f.write(report)
+        except OSError as exc:
+            raise click.FileError(save_path, hint=str(exc)) from exc
         click.echo(f"Report saved to {save_path} ({fmt})")
     else:
         click.echo(report)

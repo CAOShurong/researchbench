@@ -143,6 +143,26 @@ class TestRunCommand:
         result = runner.invoke(main, ["run", "--tasks", "nope"])
         assert result.exit_code != 0
 
+    def test_run_save_to_missing_dir_errors_cleanly(self, runner, tmp_path):
+        bad_dir = tmp_path / "no" / "such" / "dir"
+        result = runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--format",
+                "json",
+                "--save",
+                str(bad_dir / "out.json"),
+            ],
+        )
+        assert result.exit_code != 0
+        assert "Error" in result.output
+        assert "Traceback" not in result.output
+
     def test_run_all_tasks(self, runner):
         result = runner.invoke(main, ["run", "--tasks", "all", "--model", "gpt-4o"])
         assert result.exit_code == 0
