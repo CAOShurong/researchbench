@@ -78,6 +78,22 @@ def _resolve_tasks(tasks: str) -> list[str]:
     return requested
 
 
+def _get_task_data(task_name: str) -> tuple[list | None, int]:
+    """Return ``(data_list, len)`` for the given task's dataset."""
+    path = _TASK_SAMPLE_PATH.get(task_name)
+    if not path:
+        return None, 0
+    attr = path[0]
+    assert isinstance(attr, str), "First element of sample path must be a str"
+    import importlib
+
+    mod = importlib.import_module(f"researchbench.tasks.{task_name}")
+    data = getattr(mod, attr, None)
+    if data is None:
+        return None, 0
+    return data, len(data)
+
+
 def _emit(report: str, fmt: str, save_path: str | None) -> None:
     """Print the report, or write it to ``save_path``."""
     if save_path:
@@ -119,13 +135,11 @@ def show(task_name: str) -> None:
     click.echo(f"Description: {info['desc']}")
     path = _TASK_SAMPLE_PATH.get(task_name)
     if path:
+        assert isinstance(path[0], str)
         attr = path[0]
-        import importlib
-
-        mod = importlib.import_module(f"researchbench.tasks.{task_name}")
-        data = getattr(mod, attr, None)
-        if data is not None:
-            click.echo(f"\nDataset ({attr}): {len(data)} item(s)")
+        _, size = _get_task_data(task_name)
+        if size > 0:
+            click.echo(f"\nDataset ({attr}): {size} item(s)")
 
 
 @main.command()
@@ -139,18 +153,9 @@ def show(task_name: str) -> None:
 @click.option("--save", "save_path", default=None, help="Write to file.")
 def tasks(fmt: str, save_path: str | None) -> None:
     """List available tasks with metadata (dataset size, prompt key)."""
-    import importlib
-
     entries = []
     for name, info in TASK_INFO.items():
-        path = _TASK_SAMPLE_PATH.get(name)
-        dataset_size = 0
-        if path:
-            attr = path[0]
-            mod = importlib.import_module(f"researchbench.tasks.{name}")
-            data = getattr(mod, attr, None)
-            if data is not None:
-                dataset_size = len(data)
+        _, dataset_size = _get_task_data(name)
         entries.append({"name": name, "description": info["desc"], "dataset_size": dataset_size})
 
     if fmt == "json":
@@ -184,6 +189,7 @@ def sample(task_name: str, fmt: str) -> None:
     import importlib
 
     mod = importlib.import_module(f"researchbench.tasks.{task_name}")
+    assert isinstance(path[0], str)
     attr = path[0]
     data = getattr(mod, attr, None)
     if not data:
@@ -207,6 +213,15 @@ def sample(task_name: str, fmt: str) -> None:
             click.echo(f"  {line}")
 
 
+def _show_dry_run(task_list: list[str]) -> None:
+    """Print tasks and item counts without evaluating."""
+    click.echo(f"Dry run: {len(task_list)} task(s) selected")
+    click.echo("=" * 50)
+    for name in task_list:
+        _, size = _get_task_data(name)
+        click.echo(f"  {name:25s} {size} item(s)")
+
+
 @main.command()
 @click.option("--tasks", default="all", help="Comma-separated task names or 'all'.")
 @click.option("--model", default="gpt-4o", help="Model to evaluate.")
@@ -219,9 +234,17 @@ def sample(task_name: str, fmt: str) -> None:
 )
 @click.option("--save", "save_path", default=None, help="Write the report to this file path.")
 @click.option("--verbose", is_flag=True, default=False, help="Show per-task detail breakdown.")
-def run(tasks: str, model: str, fmt: str, save_path: str | None, verbose: bool) -> None:
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Show tasks and data sizes without evaluating."
+)
+def run(
+    tasks: str, model: str, fmt: str, save_path: str | None, verbose: bool, dry_run: bool
+) -> None:
     """Run the benchmark against a single model."""
     task_list = _resolve_tasks(tasks)
+    if dry_run:
+        _show_dry_run(task_list)
+        return
     bench = Benchmark(tasks=task_list)
     result = bench.run(model=model)
     _emit(result.to_format(fmt, verbose=verbose), fmt, save_path)
@@ -247,11 +270,22 @@ def run(tasks: str, model: str, fmt: str, save_path: str | None, verbose: bool) 
 @click.option(
     "--verbose", is_flag=True, default=False, help="Show per-task detail breakdown per model."
 )
+@click.option(
+    "--dry-run", is_flag=True, default=False, help="Show tasks and data sizes without evaluating."
+)
 def compare(
-    models: tuple[str, ...], tasks: str, fmt: str, save_path: str | None, verbose: bool
+    models: tuple[str, ...],
+    tasks: str,
+    fmt: str,
+    save_path: str | None,
+    verbose: bool,
+    dry_run: bool,
 ) -> None:
     """Compare multiple models on the same tasks."""
     task_list = _resolve_tasks(tasks)
+    if dry_run:
+        _show_dry_run(task_list)
+        return
     bench = Benchmark(tasks=task_list)
     results = bench.compare(models=list(models))
 

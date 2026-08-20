@@ -231,6 +231,13 @@ class TestRunCommand:
         assert result.exit_code == 0
         assert "AVERAGE" in result.output
 
+    def test_run_dry_run(self, runner):
+        result = runner.invoke(main, ["run", "--tasks", "all", "--model", "gpt-4o", "--dry-run"])
+        assert result.exit_code == 0
+        assert "Dry run" in result.output
+        assert "paper_comprehension" in result.output
+        assert "item(s)" in result.output
+
 
 class TestCompareCommand:
     def test_compare_text_table(self, runner):
@@ -329,3 +336,22 @@ class TestCompareCommand:
         assert verbose.exit_code == 0
         assert len(verbose.output) > len(plain.output)
         assert "details" in verbose.output
+
+    def test_compare_dry_run(self, runner):
+        result = runner.invoke(
+            main,
+            [
+                "compare",
+                "--model",
+                "gpt-4o",
+                "--model",
+                "claude-3-opus",
+                "--tasks",
+                "all",
+                "--dry-run",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Dry run" in result.output
+        assert "paper_comprehension" in result.output
+        assert "item(s)" in result.output
