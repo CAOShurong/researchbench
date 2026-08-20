@@ -26,6 +26,14 @@ pip install -e ".[dev]"
 
 The `dev` extra installs `pytest`, `pytest-cov`, `ruff`, and `mypy`.
 
+Optional: enable pre-commit hooks (`.pre-commit-config.yaml` runs `ruff` and
+`ruff-format` before commits):
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
 ## Running the checks
 
 Everything must be green before submitting a PR.

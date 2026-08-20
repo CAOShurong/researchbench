@@ -10,6 +10,7 @@ Mock run (no key -> canned answers, smoke-test only):
 The script refuses to label mock output as a real evaluation: if no API key is
 present it prints a clear warning. Never report mock scores as model results.
 """
+
 import os
 import sys
 
