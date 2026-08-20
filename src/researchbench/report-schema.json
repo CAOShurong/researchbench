@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/CAOShurong/researchbench/blob/main/docs/report-schema.json",
+  "title": "ResearchBench Report",
+  "description": "Schema for a single-model ResearchBench evaluation result",
+  "type": "object",
+  "required": ["model", "average", "n_tasks", "results"],
+  "properties": {
+    "model": {
+      "type": "string",
+      "description": "Model identifier string"
+    },
+    "average": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Mean score across all tasks"
+    },
+    "n_tasks": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of tasks evaluated"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["task", "score"],
+        "properties": {
+          "task": {
+            "type": "string",
+            "description": "Task name (one of the 7 canonical names)"
+          },
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Task score"
+          },
+          "details": {
+            "type": "object",
+            "description": "Task-specific scoring breakdown; structure depends on task (see TASK_DEFINITIONS.md)"
+          }
+        }
+      }
+    }
+  }
+}

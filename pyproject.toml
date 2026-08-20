@@ -47,7 +47,7 @@ researchbench = "researchbench.cli:main"
 packages = {find = {where = ["src"]}}
 
 [tool.setuptools.package-data]
-researchbench = ["py.typed"]
+researchbench = ["py.typed", "report-schema.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

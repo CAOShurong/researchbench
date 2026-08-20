@@ -413,9 +413,7 @@ def schema(save_path: str | None) -> None:
     """Print the JSON Schema for the report format."""
     import pathlib
 
-    schema_path = (
-        pathlib.Path(__file__).resolve().parent.parent.parent / "docs" / "report-schema.json"
-    )
+    schema_path = pathlib.Path(__file__).resolve().parent / "report-schema.json"
     with open(schema_path, encoding="utf-8") as f:
         raw = f.read()
     _emit(raw, "json", save_path)
