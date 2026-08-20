@@ -250,6 +250,7 @@ def _show_dry_run(task_list: list[str]) -> None:
 @click.option(
     "--dry-run", is_flag=True, default=False, help="Show tasks and data sizes without evaluating."
 )
+@click.option("--benchmark", is_flag=True, default=False, help="Print per-task timing (stderr).")
 def run(
     tasks: str,
     ignore: str,
@@ -258,14 +259,26 @@ def run(
     save_path: str | None,
     verbose: bool,
     dry_run: bool,
+    benchmark: bool,
 ) -> None:
     """Run the benchmark against a single model."""
     task_list = _resolve_tasks(tasks, ignore=ignore)
     if dry_run:
         _show_dry_run(task_list)
         return
+    import time
+
+    from researchbench.core import TaskResult
+
     bench = Benchmark(tasks=task_list)
-    result = bench.run(model=model)
+    result = BenchmarkResult(model=model)
+    for name, task in bench.tasks.items():
+        t0 = time.perf_counter()
+        score, details = task.evaluate(model=model)
+        elapsed = time.perf_counter() - t0
+        result.results.append(TaskResult(task_name=name, model=model, score=score, details=details))
+        if benchmark:
+            click.echo(f"  [{name}] {elapsed:.3f}s", err=True)
     _emit(result.to_format(fmt, verbose=verbose), fmt, save_path)
 
 

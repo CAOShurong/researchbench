@@ -261,6 +261,14 @@ class TestRunCommand:
         assert result.exit_code != 0
         assert "does not match" in result.output.lower()
 
+    def test_run_benchmark(self, runner):
+        result = runner.invoke(
+            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--benchmark"]
+        )
+        assert result.exit_code == 0
+        assert "s" in result.stderr
+        assert "paper_comprehension" in result.stderr
+
 
 class TestCompareCommand:
     def test_compare_text_table(self, runner):
