@@ -1,6 +1,8 @@
 """Tests for the ResearchBench CLI (text/json/html reports, compare, verbose)."""
 
 import json
+import subprocess
+import sys
 
 import pytest
 from click.testing import CliRunner
@@ -11,6 +13,19 @@ from researchbench.cli import main
 @pytest.fixture
 def runner():
     return CliRunner()
+
+
+class TestModuleEntry:
+    def test_python_m_researchbench_list(self):
+        out = subprocess.run(
+            [sys.executable, "-m", "researchbench", "list"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+            check=False,
+        )
+        assert out.returncode == 0
+        assert "paper_comprehension" in out.stdout
 
 
 class TestListCommand:

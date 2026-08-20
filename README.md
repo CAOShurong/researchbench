@@ -1,5 +1,9 @@
 # ResearchBench
 
+![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 A comprehensive benchmark for evaluating AI academic and research capabilities.
 
 ## Why?
@@ -78,6 +82,7 @@ documented in [`docs/TASK_DEFINITIONS.md`](docs/TASK_DEFINITIONS.md).
 - [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) — how to develop, test and extend.
 - [`examples/`](examples/) — runnable CLI and Python API demos (mock-mode safe).
 - [`CHANGELOG.md`](CHANGELOG.md) — version history.
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) — proposed direction (non-binding).
 - [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) / [`SECURITY.md`](SECURITY.md) —
   community norms and vulnerability reporting.
 
