@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "researchbench"
 version = "0.1.0"
 description = "A comprehensive benchmark for evaluating AI academic and research capabilities"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 requires-python = ">=3.9"
 authors = [{name = "CAOShurong", email = "170531907+CAOShurong@users.noreply.github.com"}]
 keywords = ["benchmark", "ai", "research", "academic", "evaluation", "llm"]
@@ -16,7 +16,6 @@ classifiers = [
     "Environment :: Console",
     "Intended Audience :: Science/Research",
     "Intended Audience :: Education",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -49,6 +48,9 @@ researchbench = "researchbench.cli:main"
 
 [tool.setuptools]
 packages = {find = {where = ["src"]}}
+
+[tool.setuptools.package-data]
+researchbench = ["py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
