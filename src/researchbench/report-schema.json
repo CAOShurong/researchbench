@@ -1,14 +1,31 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/CAOShurong/researchbench/blob/main/docs/report-schema.json",
-  "title": "ResearchBench Report",
-  "description": "Schema for a single-model ResearchBench evaluation result",
+  "$id": "https://github.com/CAOShurong/researchbench/blob/main/src/researchbench/report-schema.json",
+  "title": "ResearchBench Run Record",
+  "description": "Schema for a single-model ResearchBench evaluation run record (RESEARCH_BENCHMARK.md Section 7.1)",
   "type": "object",
-  "required": ["model", "average", "n_tasks", "results"],
+  "required": ["model", "timestamp", "benchmark_version", "average", "n_tasks", "results"],
   "properties": {
     "model": {
       "type": "string",
-      "description": "Model identifier string"
+      "description": "Model or product identifier (e.g. 'gpt-4o', 'ChatGPT (GPT-4o)')"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp of the run"
+    },
+    "benchmark_version": {
+      "type": "string",
+      "description": "Semantic version of the benchmark suite"
+    },
+    "run_config": {
+      "type": "object",
+      "description": "Run configuration: model, tasks selected, capture_raw flag, etc.",
+      "properties": {
+        "model": { "type": "string" },
+        "tasks": { "type": "array", "items": { "type": "string" } },
+        "capture_raw": { "type": "boolean" }
+      }
     },
     "average": {
       "type": "number",
@@ -40,6 +57,18 @@
           "details": {
             "type": "object",
             "description": "Task-specific scoring breakdown; structure depends on task (see TASK_DEFINITIONS.md)"
+          },
+          "raw_output": {
+            "type": "string",
+            "description": "All model responses for this task, joined by '---'"
+          },
+          "duration_seconds": {
+            "type": "number",
+            "description": "Wall-clock time for this task"
+          },
+          "evaluator_version": {
+            "type": "string",
+            "description": "Scorer version identifier (e.g. 'keyword-matching-v0.1')"
           }
         }
       }

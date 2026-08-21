@@ -1,10 +1,10 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 4
-updated_at: "2026-08-21T11:10:00+08:00"
+handoff_revision: 5
+updated_at: "2026-08-21T11:40:00+08:00"
 updated_by: "agent-session"
-base_revision: git:57ce3f7e697dd05758aab711ef0e5923ef87cd74
-workspace_fingerprint: sha256:c0226ae579e45b2d9312d2f6dbafddff6607ef0326978f2fa5a5c408ba6510ff
+base_revision: git:7b9daf7c97966f69835709bad59d2633db5e9fb3
+workspace_fingerprint: sha256:b7fc4235a032ebd0ae291f92e5ec71dd894be444dfc8e22ec96195ae064144b8
 context_fingerprint: sha256:27846abba75b153341b21dd871fb41c7cacaed64276f4075dde21112faf9bf22
 status: active
 ---
@@ -73,14 +73,13 @@ do we know?"*
 
 | Check | Result | Executed at / artifact version | Basis / exit code | Evidence or command |
 |---|---|---|---|---|---|
-| `pytest tests` | PASS | 2026-08-21 | exit 0, 88.1% | `--cov --cov-fail-under=80` |
+| `pytest tests` | PASS | 2026-08-21 | exit 0, 165 tests | `--cov --cov-fail-under=80` |
 | `ruff check src tests` | PASS | 2026-08-21 | exit 0 | `ruff check` |
 | `ruff format --check src tests` | PASS | 2026-08-21 | exit 0 | `ruff format --check` |
 | `mypy src` | PASS | 2026-08-21 | exit 0 | `mypy src` |
-| `pre-commit run --all-files` | PASS | 2026-08-21 | exit 0 | `pre-commit run --all-files` |
-| `python -m build` | PASS | 2026-08-21 | exit 0 | sdist + wheel created |
-| Fresh-venv wheel install + smoke | PASS | 2026-08-21 | exit 0 each | `--version`, `list`, `verify`, `run`, `compare`, `schema`, `tasks` |
-| `python -m researchbench` | PASS | 2026-08-21 | exit 0 | `--version` shows 0.1.0 |
+| GitHub CI (all 6 matrix jobs) | PASS | 2026-08-21 | run 32447648205 success | `gh run list` |
+| Profile PR #90 (fix false claim) | MERGED | 2026-08-21 | CI SUCCESS | `gh pr view 90` |
+| Run-record metadata implemented | PASS | 2026-08-21 | 3 new tests pass | `test_run_record_metadata`, `test_raw_output_captured` |
 
 ## Decisions referenced
 
