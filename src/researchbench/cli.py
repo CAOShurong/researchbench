@@ -332,7 +332,7 @@ def run(
 
                 return wrapped
 
-            mod._call_model = _make_wrapped(name, original)
+            mod._call_model = _make_wrapped(name, original)  # type: ignore[attr-defined]
 
     result = BenchmarkResult(model=model)
 

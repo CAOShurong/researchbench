@@ -2,9 +2,14 @@
 from __future__ import annotations
 
 import html
+import importlib
 import json
+import time
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any
+
+from researchbench import __version__
 
 
 @dataclass
@@ -14,12 +19,17 @@ class TaskResult:
     score: float
     details: dict[str, Any] = field(default_factory=dict)
     raw_output: str = ""
+    duration_seconds: float = 0.0
+    evaluator_version: str = ""
 
 
 @dataclass
 class BenchmarkResult:
     results: list[TaskResult] = field(default_factory=list)
     model: str = ""
+    timestamp: str = ""
+    benchmark_version: str = ""
+    run_config: dict[str, Any] = field(default_factory=dict)
 
     def summary(self) -> str:
         """Short human-readable text summary (no per-task details)."""
@@ -54,6 +64,9 @@ class BenchmarkResult:
         return json.dumps(
             {
                 "model": self.model,
+                "timestamp": self.timestamp,
+                "benchmark_version": self.benchmark_version,
+                "run_config": self.run_config,
                 "average": round(self.average(), 4),
                 "n_tasks": len(self.results),
                 "results": [
@@ -61,6 +74,9 @@ class BenchmarkResult:
                         "task": r.task_name,
                         "score": r.score,
                         "details": r.details,
+                        "raw_output": r.raw_output,
+                        "duration_seconds": round(r.duration_seconds, 4),
+                        "evaluator_version": r.evaluator_version,
                     }
                     for r in self.results
                 ],
@@ -138,13 +154,54 @@ class Benchmark:
             k: all_tasks[k] for k in (tasks or list(all_tasks)) if k in all_tasks
         }
 
-    def run(self, model: str = "gpt-4o", **kwargs) -> BenchmarkResult:
-        result = BenchmarkResult(model=model)
+    def run(self, model: str = "gpt-4o", capture_raw: bool = True, **kwargs) -> BenchmarkResult:
+        timestamp = datetime.now(timezone.utc).isoformat()
+        result = BenchmarkResult(
+            model=model,
+            timestamp=timestamp,
+            benchmark_version=__version__,
+            run_config={
+                "model": model,
+                "tasks": list(self.tasks.keys()),
+                "capture_raw": capture_raw,
+            },
+        )
+
         for name, task in self.tasks.items():
+            captured_responses: list[str] = []
+            original_fn = None
+
+            if capture_raw:
+                mod = importlib.import_module(f"researchbench.tasks.{name}")
+                original_fn = getattr(mod, "_call_model", None)
+                if original_fn is not None:
+
+                    def _capturing(m, p, _orig=original_fn, _cap=captured_responses):
+                        resp = _orig(m, p)
+                        _cap.append(resp)
+                        return resp
+
+                    mod._call_model = _capturing  # type: ignore[attr-defined]
+
+            t0 = time.perf_counter()
             score, details = task.evaluate(model=model, **kwargs)
+            duration = time.perf_counter() - t0
+
+            if capture_raw and original_fn is not None:
+                mod._call_model = original_fn  # type: ignore[attr-defined]
+
             result.results.append(
-                TaskResult(task_name=name, model=model, score=score, details=details)
+                TaskResult(
+                    task_name=name,
+                    model=model,
+                    score=score,
+                    details=details,
+                    raw_output="\n---\n".join(captured_responses) if captured_responses else "",
+                    duration_seconds=duration,
+                    evaluator_version="keyword-matching-v0.1",
+                )
             )
+
         return result
 
     @staticmethod

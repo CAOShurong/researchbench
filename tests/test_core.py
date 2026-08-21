@@ -51,6 +51,28 @@ class TestBenchmarkResult:
         assert isinstance(data["results"], list)
         assert {"task", "score", "details"} <= set(data["results"][0])
 
+    def test_run_record_metadata(self, bench):
+        """RESEARCH_BENCHMARK.md Section 7.1: run records must capture metadata."""
+        result = bench.run(model="gpt-4o")
+        assert result.timestamp  # ISO 8601 string
+        assert result.benchmark_version  # e.g. "0.1.0"
+        assert result.run_config["model"] == "gpt-4o"
+        assert "paper_comprehension" in result.run_config["tasks"]
+        for r in result.results:
+            assert r.duration_seconds >= 0.0
+            assert r.evaluator_version  # e.g. "keyword-matching-v0.1"
+
+    def test_raw_output_captured(self, bench):
+        """RESEARCH_BENCHMARK.md Section 7.2: raw outputs must not be discarded."""
+        result = bench.run(model="gpt-4o", capture_raw=True)
+        for r in result.results:
+            assert r.raw_output != "", f"{r.task_name} raw_output is empty"
+
+    def test_raw_output_disabled(self, bench):
+        result = bench.run(model="gpt-4o", capture_raw=False)
+        for r in result.results:
+            assert r.raw_output == ""
+
     def test_to_html_structure(self, result):
         html = result.to_html()
         assert html.startswith("<!doctype html>")
