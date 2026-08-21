@@ -266,8 +266,11 @@ class TestRunCommand:
             main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--benchmark"]
         )
         assert result.exit_code == 0
-        assert "s" in result.stderr
-        assert "paper_comprehension" in result.stderr
+        # --benchmark timing goes to stderr; on click 8.1.x (py3.9) stderr is
+        # mixed into stdout by default, so combine both for cross-version safety.
+        combined = result.output + getattr(result, "stderr", "")
+        assert "paper_comprehension" in combined
+        assert "s" in combined
 
     def test_run_quiet(self, runner):
         normal = runner.invoke(main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o"])

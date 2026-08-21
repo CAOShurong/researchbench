@@ -1,11 +1,11 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 3
-updated_at: "2026-08-21T10:05:00+08:00"
+handoff_revision: 4
+updated_at: "2026-08-21T11:10:00+08:00"
 updated_by: "agent-session"
-base_revision: git:379781250bd6e6702070599a9085a4f13e1dbc68
-workspace_fingerprint: sha256:8d6df2dde28182d7b9805e3b3d97d508159653a65f16539812fe220ea19135ee
-context_fingerprint: sha256:4e3af5a5fd5ef791c43f4bc0f99f169a6b521a7222d9f0d01959532c33847a87
+base_revision: git:57ce3f7e697dd05758aab711ef0e5923ef87cd74
+workspace_fingerprint: sha256:c0226ae579e45b2d9312d2f6dbafddff6607ef0326978f2fa5a5c408ba6510ff
+context_fingerprint: sha256:27846abba75b153341b21dd871fb41c7cacaed64276f4075dde21112faf9bf22
 status: active
 ---
 
@@ -92,21 +92,23 @@ do we know?"*
 ## Risks and unknowns
 
 - **CRITICAL: All 7 tasks use keyword substring matching as their sole scoring
-  method.** This is a placeholder, not a scientifically valid evaluation. It
-  cannot distinguish correct answers from plausible-sounding ones, detect
-  hallucinations, or evaluate citations. See RESEARCH_BENCHMARK.md Section 10.
+  method.** This is a placeholder, not a scientifically valid evaluation.
+- **CRITICAL: Naming conflict.** A 2025 "ResearchBench" paper and code repo
+  already exists (scientific discovery, idea retrieval, hypothesis generation).
+  Other competitors: ResearcherBench, DeepResearch Bench, RPC-Bench (ACL 2026).
+  The public README and RESEARCH.md previously claimed "no existing benchmark
+  covers this gap" — this was **false** and has been corrected. A rename may be
+  needed (user decision).
+- **CRITICAL: Public claims vs. reality.** The project is a prototype, not a
+  validated benchmark. It has no expert-validated datasets, gold answers, model
+  results, or leaderboard. The README now reflects this honestly.
+- **CI was red on Python 3.9** due to `test_run_benchmark` checking `result.stderr`
+  which is empty on click 8.1.x (py3.9 default `mix_stderr=True`). **Fixed.**
+- **3 unpushed commits** exist locally (not pushed; user will push).
 - **No reproducibility metadata.** Run records contain only the model name.
-  No timestamp, no model settings, no raw outputs, no cited sources.
 - **No subscription-model protocol.** Only API calls are supported.
-- **No contamination prevention.** All papers are well-known classics likely
-  in training data.
-- **RESEARCH.md's own prescription was not followed.** The background research
-  prescribed LLM-as-judge + human validation + real data; the code chose
-  keyword matching instead.
-- **No fabricated data.** All task data is from the initial scaffold; adding
-  new items requires expert validation per RESEARCH_BENCHMARK.md Section 4.
-- The `examples/demo.ipynb` was added by an external agent; its content has not
-  been reviewed by this session.
+- **No contamination prevention.** All papers are well-known classics.
+- The `examples/demo.ipynb` was added by an external agent; not reviewed.
 
 ## Next actions
 

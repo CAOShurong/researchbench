@@ -83,7 +83,47 @@ Move the schema file into `src/researchbench/report-schema.json` and add it to
 - A copy remains at `docs/report-schema.json` for browser access.
 - Verified: built wheel, installed in clean venv, schema command produces valid JSON.
 
-## D-20260821-100000-rb005
+## D-20260821-110000-rb006
+
+### Reposition as prototype; fix false novelty claims; fix CI on Python 3.9
+- Status: accepted
+- Date: 2026-08-21
+- Deciders: user (direct directive), build session
+- Supersedes: none
+
+### Context
+
+The user identified that:
+1. A 2025 "ResearchBench" paper and code repo already exists (scientific
+   discovery, idea retrieval, hypothesis generation) — direct name collision.
+2. ResearcherBench, DeepResearch Bench, and RPC-Bench (ACL 2026) also cover
+   overlapping territory.
+3. The public README and RESEARCH.md claimed "no existing benchmark covers this
+   gap" — this was false.
+4. The project has no expert-validated data, gold answers, model results, or
+   leaderboard — it is a prototype, not a "comprehensive benchmark."
+5. CI was red on Python 3.9 (`test_run_benchmark` failing due to click stderr
+   capture differences between click 8.1.x and 8.2+).
+6. PyPI project does not exist; GitHub Release has no assets.
+
+### Decision
+
+1. **Reposition**: update README, RESEARCH_BENCHMARK.md, RESEARCH.md,
+   HANDOFF.md to honestly describe the project as a "research-capability
+   evaluation framework prototype," not a validated benchmark.
+2. **Correct false claims**: remove "fills a gap no existing benchmark covers"
+   and "no existing benchmark tests this" from all public-facing docs.
+   Acknowledge the 2025 ResearchBench and other competitors by name.
+3. **Fix CI**: `test_run_benchmark` now checks `result.output +
+   getattr(result, "stderr", "")` for cross-click-version safety.
+4. **Naming**: flag the name collision as a risk; a rename is a user decision.
+
+### Consequences
+
+- The project cannot claim to be the first or only benchmark in this space.
+- All marketing/profile claims must be updated to reflect prototype status.
+- The CI should now pass on Python 3.9 (the test fix is cross-version safe).
+- A rename may be necessary before any public promotion.
 
 ### Write RESEARCH_BENCHMARK.md and freeze keyword-matching as a known-invalid placeholder
 - Status: accepted

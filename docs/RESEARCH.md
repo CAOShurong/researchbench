@@ -23,6 +23,15 @@
 
 ## 2. Capabilities NOT Covered by Any Existing Benchmark
 
+> **Update 2026-08-21:** This section's original claim ("No existing benchmark
+> tests this") is **no longer accurate**. Multiple benchmarks now cover
+> overlapping territory, including a 2025 "ResearchBench" paper (scientific
+> discovery, idea retrieval), ResearcherBench (open research questions),
+> DeepResearch Bench (research reports), and RPC-Bench (ACL 2026, paper
+> understanding). The gaps below remain partially uncovered, but we must not
+> claim to be the first or only benchmark in this space. See
+> `RESEARCH_BENCHMARK.md` Section 8 for the updated comparison.
+
 ### CONFIRMED GAPS (no benchmark exists):
 
 1. **Paper reading comprehension** — Can AI deeply understand a research paper:

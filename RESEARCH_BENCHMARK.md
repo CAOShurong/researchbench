@@ -258,18 +258,35 @@ must be recorded as-is.
 
 ## 8. Comparison with existing benchmarks
 
-Before finalizing any task design, research the strongest existing benchmarks
-related to:
+### 8.1 Naming conflict
 
-- Deep research / research agents
-- Scientific/research QA
-- Literature synthesis
-- Paper understanding
-- Browsing and evidence-based QA
-- Long-context research
-- Hypothesis generation / scientific discovery
+A 2025 paper and code repository named **"ResearchBench"** already exists,
+evaluating scientific discovery, idea retrieval, and hypothesis generation.
+This is a direct name collision. **This project's name may need to change**
+to avoid confusion and misrepresentation. The rename is a user decision.
 
-For each benchmark, determine:
+### 8.2 Known competitors (requires deeper research)
+
+| Benchmark | What it measures | Status | Our differentiation (proposed) |
+|---|---|---|---|
+| ResearchBench (2025) | Scientific discovery, idea retrieval, hypothesis generation | Published paper + code | TBD — must not claim to be the first |
+| ResearcherBench | Open research questions | Exists | TBD |
+| DeepResearch Bench | Research reports | Exists | TBD |
+| RPC-Bench (ACL 2026) | Paper understanding | Exists | TBD |
+| PaperQA2 / PaperQA | AI paper QA system (not a benchmark) | 9.1k stars, published | We are a benchmark, not a system. |
+| SciCode | Science code problems | ~200 stars | We measure the full research pipeline, not just coding. |
+| MLAgentBench | ML experiment agent | Exists | We measure academic research broadly, not just ML experimentation. |
+| MMLU / GPQA | Knowledge (MCQ) | 26k/530 stars | We measure process skills, not factual recall. |
+| SWE-bench | GitHub issue fixing | 16k stars | We measure research reasoning, not software engineering. |
+
+**Do not claim "no existing benchmark covers this gap."** Multiple benchmarks
+now cover overlapping territory. Our differentiation must come from specific
+design properties (stronger ground truth, evidence tracing, subscription-model
+protocol, reproducibility), not from a false novelty claim.
+
+### 8.3 Required research
+
+Before finalizing any task design, complete the comparison for each benchmark:
 
 | Question | Must answer |
 |---|---|
@@ -283,17 +300,6 @@ For each benchmark, determine:
 
 Our benchmark should be built only after this comparison is complete. Do not
 create novelty by renaming existing tasks.
-
-### Known competitors (preliminary, requires deeper research)
-
-| Benchmark | What it measures | Our differentiation (proposed) |
-|---|---|---|
-| PaperQA / PaperQA2 | AI paper QA system (not a benchmark) | We are a benchmark, not a system. |
-| SciCode | Science code problems | We measure the full research pipeline, not just coding. |
-| MLAgentBench | ML experiment agent | We measure academic research broadly, not just ML experimentation. |
-| MMLU / GPQA | Knowledge (MCQ) | We measure process skills, not factual recall. |
-| SWE-bench | GitHub issue fixing | We measure research reasoning, not software engineering. |
-| (others to be researched) | | |
 
 ---
 
