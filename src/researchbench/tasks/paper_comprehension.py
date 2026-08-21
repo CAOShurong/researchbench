@@ -2,6 +2,8 @@
 
 from typing import Any
 
+from researchbench.dataset_schema import DatasetItem, Provenance
+
 PAPERS: list[dict[str, Any]] = [
     {
         "id": "attention-2017",
@@ -133,3 +135,46 @@ def _call_model(model: str, prompt: str) -> str:
         )
         return r.content[0].text
     return "Mock response for evaluation."
+
+
+# --- Pilot DatasetItem (Phase 2: one item migrated to versioned schema) -------
+
+PILOT_ITEMS: list[DatasetItem] = [
+    DatasetItem(
+        id="paper_comprehension/attention-2017/q1",
+        capability_tags=["C5", "C1"],
+        ground_truth=(
+            "The Transformer replaces recurrence and convolution with "
+            "self-attention; key limitation is quadratic complexity in "
+            "sequence length."
+        ),
+        ground_truth_source="paper",
+        scoring_method="keyword_match_placeholder",
+        contamination_risk="high",
+        provenance=Provenance(
+            source_id="arXiv:1706.03762",
+            source_type="paper",
+            license="arXiv-nonexclusive-license-1.1",
+            author_role="benchmark_author",
+            reviewer_role="",
+            review_status="draft",
+            review_notes=(
+                "Classic paper, very likely in training data. Use for "
+                "methodology critique, not factual recall. No expert "
+                "review yet — draft status only."
+            ),
+        ),
+        expert_notes=(
+            "The reference_keywords are a placeholder answer key for "
+            "keyword matching. They do NOT constitute research-grade "
+            "ground truth. A real rubric must be designed by a domain expert."
+        ),
+        version="1.0",
+        task_data={
+            "title": PAPERS[0]["title"],
+            "abstract": PAPERS[0]["abstract"],
+            "question": PAPERS[0]["questions"][0]["q"],
+            "reference_keywords": PAPERS[0]["questions"][0]["reference_keywords"],
+        },
+    ),
+]
