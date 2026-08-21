@@ -75,7 +75,7 @@ class BenchmarkResult:
                         "score": r.score,
                         "details": r.details,
                         "raw_output": r.raw_output,
-                        "duration_seconds": round(r.duration_seconds, 4),
+                        "duration_seconds": round(r.duration_seconds, 6),
                         "evaluator_version": r.evaluator_version,
                     }
                     for r in self.results
@@ -154,55 +154,136 @@ class Benchmark:
             k: all_tasks[k] for k in (tasks or list(all_tasks)) if k in all_tasks
         }
 
-    def run(self, model: str = "gpt-4o", capture_raw: bool = True, **kwargs) -> BenchmarkResult:
+    def run(
+        self,
+        model: str = "gpt-4o",
+        capture_raw: bool = True,
+        parallel: bool = False,
+        benchmark: bool = False,
+        save_responses_dir: str | None = None,
+        **kwargs,
+    ) -> BenchmarkResult:
+        """Run all tasks against *model* and return a fully-populated run record.
+
+        When *parallel* is True, tasks run concurrently via ThreadPoolExecutor;
+        results are sorted into canonical task order before return.
+        When *benchmark* is True, per-task timing is printed to stderr.
+        When *save_responses_dir* is set, every raw model response is appended
+        (not overwritten) to ``<dir>/<task_name>.txt``.
+        Monkeypatches on ``_call_model`` are always restored via try/finally.
+        """
+        import sys
+        from pathlib import Path
+
         timestamp = datetime.now(timezone.utc).isoformat()
+        run_config: dict[str, Any] = {
+            "model": model,
+            "tasks": list(self.tasks.keys()),
+            "capture_raw": capture_raw,
+            "parallel": parallel,
+        }
+        if save_responses_dir:
+            run_config["save_responses_dir"] = save_responses_dir
+
         result = BenchmarkResult(
             model=model,
             timestamp=timestamp,
             benchmark_version=__version__,
-            run_config={
-                "model": model,
-                "tasks": list(self.tasks.keys()),
-                "capture_raw": capture_raw,
-            },
+            run_config=run_config,
         )
 
-        for name, task in self.tasks.items():
-            captured_responses: list[str] = []
-            original_fn = None
+        # Set up per-task monkeypatch wrappers for raw-output capture and
+        # --save-responses. ALL wrappers are installed before ANY evaluation
+        # starts and ALL originals are restored in a single finally block.
+        task_meta: dict[str, dict[str, Any]] = {}
+        save_dir = Path(save_responses_dir) if save_responses_dir else None
+        if save_dir:
+            save_dir.mkdir(parents=True, exist_ok=True)
 
-            if capture_raw:
-                mod = importlib.import_module(f"researchbench.tasks.{name}")
-                original_fn = getattr(mod, "_call_model", None)
-                if original_fn is not None:
+        try:
+            for name in self.tasks:
+                task_meta[name] = {"captured": [], "original_fn": None, "mod": None}
+                if capture_raw or save_dir:
+                    mod = importlib.import_module(f"researchbench.tasks.{name}")
+                    original = getattr(mod, "_call_model", None)
+                    task_meta[name]["original_fn"] = original
+                    task_meta[name]["mod"] = mod
+                    if original is not None:
+                        cap_list = task_meta[name]["captured"]
+                        t_name = name
 
-                    def _capturing(m, p, _orig=original_fn, _cap=captured_responses):
-                        resp = _orig(m, p)
-                        _cap.append(resp)
-                        return resp
+                        def _make_wrapper(orig, cap, tn, sd):
+                            def wrapped(m, p):
+                                resp = orig(m, p)
+                                cap.append(resp)
+                                if sd:
+                                    with open(sd / f"{tn}.txt", "a", encoding="utf-8") as f:
+                                        f.write(resp + "\n---\n")
+                                return resp
 
-                    mod._call_model = _capturing  # type: ignore[attr-defined]
+                            return wrapped
 
-            t0 = time.perf_counter()
-            score, details = task.evaluate(model=model, **kwargs)
-            duration = time.perf_counter() - t0
+                        mod._call_model = _make_wrapper(original, cap_list, t_name, save_dir)  # type: ignore[attr-defined]
 
-            if capture_raw and original_fn is not None:
-                mod._call_model = original_fn  # type: ignore[attr-defined]
+            def _eval(name_task: tuple[str, Any]) -> tuple[str, float, dict[str, Any], float]:
+                n, t = name_task
+                t0 = time.perf_counter()
+                sc, det = t.evaluate(model=model, **kwargs)
+                return n, sc, det, time.perf_counter() - t0
 
-            result.results.append(
-                TaskResult(
-                    task_name=name,
-                    model=model,
-                    score=score,
-                    details=details,
-                    raw_output="\n---\n".join(captured_responses) if captured_responses else "",
-                    duration_seconds=duration,
-                    evaluator_version="keyword-matching-v0.1",
-                )
-            )
+            if parallel:
+                import concurrent.futures
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.tasks)) as pool:
+                    futures = {pool.submit(_eval, (n, t)): n for n, t in self.tasks.items()}
+                    raw_results: dict[str, tuple[float, dict[str, Any], float]] = {}
+                    for future in concurrent.futures.as_completed(futures):
+                        n, sc, det, dur = future.result()
+                        raw_results[n] = (sc, det, dur)
+                        if benchmark:
+                            print(f"  [{n}] {dur:.3f}s", file=sys.stderr)
+                # Sort into canonical task order
+                for name in self.tasks:
+                    if name in raw_results:
+                        sc, det, dur = raw_results[name]
+                        result.results.append(
+                            self._make_task_result(name, model, sc, det, dur, task_meta)
+                        )
+            else:
+                for name, task in self.tasks.items():
+                    n, sc, det, dur = _eval((name, task))
+                    if benchmark:
+                        print(f"  [{n}] {dur:.3f}s", file=sys.stderr)
+                    result.results.append(
+                        self._make_task_result(name, model, sc, det, dur, task_meta)
+                    )
+        finally:
+            # Restore ALL monkeypatches, even if one task threw
+            for name, meta in task_meta.items():
+                if meta["original_fn"] is not None and meta["mod"] is not None:
+                    meta["mod"]._call_model = meta["original_fn"]
 
         return result
+
+    @staticmethod
+    def _make_task_result(
+        name: str,
+        model: str,
+        score: float,
+        details: dict[str, Any],
+        duration: float,
+        task_meta: dict[str, dict[str, Any]],
+    ) -> TaskResult:
+        captured = task_meta.get(name, {}).get("captured", [])
+        return TaskResult(
+            task_name=name,
+            model=model,
+            score=score,
+            details=details,
+            raw_output="\n---\n".join(captured) if captured else "",
+            duration_seconds=duration,
+            evaluator_version="keyword-matching-v0.1",
+        )
 
     @staticmethod
     def available_tasks() -> list[str]:
