@@ -606,5 +606,65 @@ def _compare_html(results: list[BenchmarkResult], task_list: list[str]) -> str:
 </html>"""
 
 
+@main.command("run-record")
+@click.argument("action", type=click.Choice(["import", "export", "validate"]))
+@click.option("--from", "from_path", help="JSON file to import/validate.")
+@click.option("--save", "save_path", help="Write validated/exported record to this file.")
+def run_record(action: str, from_path: str | None, save_path: str | None) -> None:
+    """Import, export, or validate subscription/API RunRecords (RESEARCH_BENCHMARK.md §6-7)."""
+    import json
+
+    from researchbench.subscription import RunRecord, validate_run_record
+
+    if action == "import":
+        if not from_path:
+            raise click.BadParameter("--from is required for import")
+        with open(from_path, encoding="utf-8") as f:
+            data = json.load(f)
+        record = RunRecord.from_dict(data)
+        errors = validate_run_record(record)
+        if errors:
+            click.echo("Validation FAILED:")
+            for e in errors:
+                click.echo(f"  {e}")
+            raise SystemExit(1)
+        click.echo(f"Imported and validated: {record.task_id}")
+        if save_path:
+            _emit(record.to_json(), "json", save_path)
+    elif action == "validate":
+        if not from_path:
+            raise click.BadParameter("--from is required for validate")
+        with open(from_path, encoding="utf-8") as f:
+            data = json.load(f)
+        try:
+            record = RunRecord.from_dict(data)
+        except (ValueError, KeyError) as exc:
+            click.echo(f"Parse error: {exc}")
+            raise SystemExit(1)
+        errors = validate_run_record(record)
+        if errors:
+            click.echo("Validation FAILED:")
+            for e in errors:
+                click.echo(f"  {e}")
+            raise SystemExit(1)
+        mode = "subscription" if record.subscription_run else "api"
+        click.echo(f"Valid: {record.task_id} ({mode})")
+    elif action == "export":
+        if not from_path:
+            raise click.BadParameter(
+                "--from is required for export (reads a raw JSON, validates, and re-exports)"
+            )
+        with open(from_path, encoding="utf-8") as f:
+            data = json.load(f)
+        record = RunRecord.from_dict(data)
+        errors = validate_run_record(record)
+        if errors:
+            click.echo("Validation FAILED — cannot export invalid record:")
+            for e in errors:
+                click.echo(f"  {e}")
+            raise SystemExit(1)
+        _emit(record.to_json(), "json", save_path)
+
+
 if __name__ == "__main__":
     main()
