@@ -58,7 +58,7 @@ class TestShowCommand:
     def test_show_reports_dataset_size(self, runner):
         result = runner.invoke(main, ["show", "paper_comprehension"])
         assert result.exit_code == 0
-        assert "Dataset (PAPERS)" in result.output
+        assert "Dataset (DATASET)" in result.output
 
     def test_show_unknown_task(self, runner):
         result = runner.invoke(main, ["show", "nope"])
@@ -131,14 +131,26 @@ class TestSampleCommand:
 
 class TestRunCommand:
     def test_run_text_default(self, runner):
-        result = runner.invoke(main, ["run", "--model", "gpt-4o", "--tasks", "paper_comprehension"])
+        result = runner.invoke(
+            main, ["run", "--model", "gpt-4o", "--tasks", "paper_comprehension", "--allow-draft"]
+        )
         assert result.exit_code == 0
         assert "ResearchBench" in result.output
         assert "AVERAGE" in result.output
 
     def test_run_json_to_stdout(self, runner):
         result = runner.invoke(
-            main, ["run", "--model", "gpt-4o", "--tasks", "idea_generation", "--format", "json"]
+            main,
+            [
+                "run",
+                "--model",
+                "gpt-4o",
+                "--tasks",
+                "idea_generation",
+                "--format",
+                "json",
+                "--allow-draft",
+            ],
         )
         assert result.exit_code == 0
         data = json.loads(result.output)
@@ -147,20 +159,41 @@ class TestRunCommand:
 
     def test_run_html_to_stdout(self, runner):
         result = runner.invoke(
-            main, ["run", "--model", "gpt-4o", "--tasks", "peer_review", "--format", "html"]
+            main,
+            [
+                "run",
+                "--model",
+                "gpt-4o",
+                "--tasks",
+                "peer_review",
+                "--format",
+                "html",
+                "--allow-draft",
+            ],
         )
         assert result.exit_code == 0
         assert "<!doctype html>" in result.output.lower()
 
     def test_run_verbose_adds_details(self, runner):
-        plain = runner.invoke(main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o"])
+        plain = runner.invoke(
+            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--allow-draft"]
+        )
         verbose = runner.invoke(
-            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--verbose"]
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--verbose",
+                "--allow-draft",
+            ],
         )
         assert verbose.exit_code == 0
         assert len(verbose.output) > len(plain.output)
         # verbose output references a details key produced by PaperComprehension
-        assert "per_paper" in verbose.output
+        assert "per_item" in verbose.output
 
     def test_run_save_to_file(self, runner, tmp_path):
         out = tmp_path / "report.json"
@@ -172,6 +205,7 @@ class TestRunCommand:
                 "paper_comprehension",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--format",
                 "json",
                 "--save",
@@ -193,6 +227,7 @@ class TestRunCommand:
                 "paper_comprehension",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--format",
                 "html",
                 "--save",
@@ -216,6 +251,7 @@ class TestRunCommand:
                 "paper_comprehension",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--format",
                 "json",
                 "--save",
@@ -227,7 +263,9 @@ class TestRunCommand:
         assert "Traceback" not in result.output
 
     def test_run_all_tasks(self, runner):
-        result = runner.invoke(main, ["run", "--tasks", "all", "--model", "gpt-4o"])
+        result = runner.invoke(
+            main, ["run", "--tasks", "all", "--model", "gpt-4o", "--allow-draft"]
+        )
         assert result.exit_code == 0
         assert "AVERAGE" in result.output
 
@@ -257,13 +295,24 @@ class TestRunCommand:
         assert "idea_generation" not in result.output
 
     def test_run_glob_no_match(self, runner):
-        result = runner.invoke(main, ["run", "--tasks", "does_not_match_*", "--model", "gpt-4o"])
+        result = runner.invoke(
+            main, ["run", "--tasks", "does_not_match_*", "--model", "gpt-4o", "--allow-draft"]
+        )
         assert result.exit_code != 0
         assert "does not match" in result.output.lower()
 
     def test_run_benchmark(self, runner):
         result = runner.invoke(
-            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--benchmark"]
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--benchmark",
+                "--allow-draft",
+            ],
         )
         assert result.exit_code == 0
         # --benchmark timing goes to stderr. On click 8.1.x (py3.9) stderr is
@@ -277,9 +326,20 @@ class TestRunCommand:
         assert "s" in combined
 
     def test_run_quiet(self, runner):
-        normal = runner.invoke(main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o"])
+        normal = runner.invoke(
+            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--allow-draft"]
+        )
         quiet = runner.invoke(
-            main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--quiet"]
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--quiet",
+                "--allow-draft",
+            ],
         )
         assert quiet.exit_code == 0
         assert "ResearchBench" in normal.output
@@ -295,6 +355,7 @@ class TestRunCommand:
                 "paper_comprehension,idea_generation",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--parallel",
             ],
         )
@@ -311,6 +372,7 @@ class TestRunCommand:
                 "paper_comprehension",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--save-responses",
                 str(resp_dir),
             ],
@@ -330,8 +392,10 @@ class TestCompareCommand:
                 "compare",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--model",
                 "claude-3-opus",
+                "--allow-draft",
                 "--tasks",
                 "paper_comprehension",
             ],
@@ -349,8 +413,10 @@ class TestCompareCommand:
                 "compare",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--model",
                 "claude-3-opus",
+                "--allow-draft",
                 "--tasks",
                 "idea_generation",
                 "--format",
@@ -371,8 +437,10 @@ class TestCompareCommand:
                 "compare",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--model",
                 "claude-3-opus",
+                "--allow-draft",
                 "--tasks",
                 "peer_review",
                 "--format",
@@ -395,8 +463,10 @@ class TestCompareCommand:
                 "compare",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--model",
                 "claude-3-opus",
+                "--allow-draft",
                 "--tasks",
                 "paper_comprehension",
                 "--format",
@@ -411,10 +481,20 @@ class TestCompareCommand:
 
     def test_compare_verbose(self, runner):
         plain = runner.invoke(
-            main, ["compare", "--model", "gpt-4o", "--tasks", "paper_comprehension"]
+            main,
+            ["compare", "--model", "gpt-4o", "--tasks", "paper_comprehension", "--allow-draft"],
         )
         verbose = runner.invoke(
-            main, ["compare", "--model", "gpt-4o", "--tasks", "paper_comprehension", "--verbose"]
+            main,
+            [
+                "compare",
+                "--model",
+                "gpt-4o",
+                "--tasks",
+                "paper_comprehension",
+                "--verbose",
+                "--allow-draft",
+            ],
         )
         assert verbose.exit_code == 0
         assert len(verbose.output) > len(plain.output)
@@ -484,6 +564,7 @@ class TestReportCommand:
                 "paper_comprehension",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--format",
                 "json",
                 "--save",
@@ -506,6 +587,7 @@ class TestReportCommand:
                 "paper_comprehension",
                 "--model",
                 "gpt-4o",
+                "--allow-draft",
                 "--format",
                 "json",
                 "--save",
@@ -538,7 +620,7 @@ class TestDataCommand:
         result = runner.invoke(main, ["data", "paper_comprehension"])
         assert result.exit_code == 0
         assert "paper_comprehension" in result.output
-        assert "2 item(s)" in result.output
+        assert "1 item(s)" in result.output
 
     def test_data_json(self, runner):
         result = runner.invoke(main, ["data", "idea_generation", "--format", "json"])
@@ -552,5 +634,5 @@ class TestDataCommand:
 
     def test_data_unknown_task(self, runner):
         result = runner.invoke(main, ["data", "nope"])
-        assert result.exit_code == 0
+        assert result.exit_code != 0
         assert "Unknown" in result.output

@@ -55,21 +55,21 @@ class TestBenchmark:
 
     def test_benchmark_run(self):
         bench = Benchmark()
-        result = bench.run(model="mock")
+        result = bench.run(model="mock", allow_draft=True)
         assert len(result.results) == 7
         for r in result.results:
             assert 0.0 <= r.score <= 100.0
 
     def test_benchmark_summary(self):
         bench = Benchmark()
-        result = bench.run(model="mock")
+        result = bench.run(model="mock", allow_draft=True)
         summary = result.summary()
         assert "ResearchBench" in summary
         assert "AVERAGE" in summary
 
     def test_benchmark_to_json(self):
         bench = Benchmark()
-        result = bench.run(model="mock")
+        result = bench.run(model="mock", allow_draft=True)
         js = result.to_json()
         assert '"model"' in js
         assert '"results"' in js

@@ -17,7 +17,7 @@ from researchbench.dataset_schema import (
     Provenance,
     validate_item,
 )
-from researchbench.tasks.paper_comprehension import PILOT_ITEMS
+from researchbench.tasks.paper_comprehension import DATASET as PILOT_ITEMS
 
 
 class TestPilotItemValid:

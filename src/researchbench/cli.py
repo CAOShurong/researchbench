@@ -57,7 +57,7 @@ FORMATS = ["text", "json", "html"]
 # The first element is the module-level attribute name; subsequent elements are
 # keys / indices to traverse: e.g. PAPERS[0]["questions"][0]["q"].
 _TASK_SAMPLE_PATH: dict[str, tuple[str | int, ...]] = {
-    "paper_comprehension": ("PAPERS", "questions", 0, "q"),
+    "paper_comprehension": ("DATASET", "question"),
     "idea_generation": ("CONTEXTS", "question"),
     "literature_synthesis": ("SYNTHESIS_SETS", "question"),
     "experimental_design": ("HYPOTHESES", "question"),
@@ -230,11 +230,14 @@ def sample(task_name: str, fmt: str) -> None:
         return
     # Walk the nested path to extract the first prompt from the first item.
     obj = data[0]
+    # Handle DatasetItem objects (which have a .task_data dict)
+    if hasattr(obj, "task_data"):
+        obj = obj.task_data
     for key in path[1:]:
         if isinstance(key, int):
             obj = obj[key]
         else:
-            obj = obj.get(key, "")
+            obj = obj.get(key, "") if isinstance(obj, dict) else getattr(obj, key, "")
     prompt = str(obj) if isinstance(obj, str) else ""
     if fmt == "json":
         import json
@@ -287,6 +290,12 @@ def _show_dry_run(task_list: list[str]) -> None:
     default=None,
     help="Directory to save raw model responses (one file per task).",
 )
+@click.option(
+    "--allow-draft",
+    is_flag=True,
+    default=False,
+    help="Allow running draft-status dataset items (not yet expert-reviewed).",
+)
 def run(
     tasks: str,
     ignore: str,
@@ -299,6 +308,7 @@ def run(
     quiet: bool,
     parallel: bool,
     save_responses_dir: str | None,
+    allow_draft: bool,
 ) -> None:
     """Run the benchmark against a single model."""
     task_list = _resolve_tasks(tasks, ignore=ignore)
@@ -306,12 +316,17 @@ def run(
         _show_dry_run(task_list)
         return
     bench = Benchmark(tasks=task_list)
-    result = bench.run(
-        model=model,
-        parallel=parallel,
-        benchmark=benchmark,
-        save_responses_dir=save_responses_dir,
-    )
+    try:
+        result = bench.run(
+            model=model,
+            parallel=parallel,
+            benchmark=benchmark,
+            save_responses_dir=save_responses_dir,
+            allow_draft=allow_draft,
+        )
+    except ValueError as exc:
+        click.echo(f"Error: {exc}", err=True)
+        raise SystemExit(1)
     _emit(result.to_format(fmt, verbose=verbose, quiet=quiet), fmt, save_path)
 
 
@@ -339,6 +354,12 @@ def run(
 @click.option(
     "--dry-run", is_flag=True, default=False, help="Show tasks and data sizes without evaluating."
 )
+@click.option(
+    "--allow-draft",
+    is_flag=True,
+    default=False,
+    help="Allow running draft-status dataset items (not yet expert-reviewed).",
+)
 def compare(
     models: tuple[str, ...],
     tasks: str,
@@ -347,6 +368,7 @@ def compare(
     save_path: str | None,
     verbose: bool,
     dry_run: bool,
+    allow_draft: bool,
 ) -> None:
     """Compare multiple models on the same tasks."""
     task_list = _resolve_tasks(tasks, ignore=ignore)
@@ -356,7 +378,11 @@ def compare(
     if not models:
         raise click.BadParameter("At least one --model is required unless --dry-run is used.")
     bench = Benchmark(tasks=task_list)
-    results = bench.compare(models=list(models))
+    try:
+        results = bench.compare(allow_draft=allow_draft, models=list(models))
+    except ValueError as exc:
+        click.echo(f"Error: {exc}", err=True)
+        raise SystemExit(1)
 
     if fmt == "json":
         payload = {
@@ -437,7 +463,7 @@ def schema(save_path: str | None) -> None:
 def verify() -> None:
     """Verify the installation by running all tasks in mock mode."""
     bench = Benchmark()
-    result = bench.run(model="gpt-4o")
+    result = bench.run(model="gpt-4o", allow_draft=True)
     all_ok = all(0.0 <= r.score <= 100.0 for r in result.results)
     click.echo("ResearchBench Verification")
     click.echo("=" * 50)
@@ -468,7 +494,7 @@ def data(task_name: str, fmt: str, save_path: str | None, validate: bool) -> Non
     if task_name not in TASK_INFO:
         click.echo(f"Unknown task: {task_name}")
         click.echo("Available: " + ", ".join(TASK_INFO.keys()))
-        return
+        raise SystemExit(1)
 
     # If --validate, check pilot DatasetItems if the task module has them.
     if validate:
