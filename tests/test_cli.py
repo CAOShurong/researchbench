@@ -266,9 +266,13 @@ class TestRunCommand:
             main, ["run", "--tasks", "paper_comprehension", "--model", "gpt-4o", "--benchmark"]
         )
         assert result.exit_code == 0
-        # --benchmark timing goes to stderr; on click 8.1.x (py3.9) stderr is
-        # mixed into stdout by default, so combine both for cross-version safety.
-        combined = result.output + getattr(result, "stderr", "")
+        # --benchmark timing goes to stderr. On click 8.1.x (py3.9) stderr is
+        # mixed into stdout by default (mix_stderr=True) and accessing
+        # result.stderr raises ValueError. On click 8.2+ stderr is separate.
+        try:
+            combined = result.output + result.stderr
+        except ValueError:
+            combined = result.output
         assert "paper_comprehension" in combined
         assert "s" in combined
 
