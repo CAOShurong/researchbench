@@ -1,10 +1,10 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 5
-updated_at: "2026-08-21T11:40:00+08:00"
-updated_by: "agent-session"
-base_revision: git:7b9daf7c97966f69835709bad59d2633db5e9fb3
-workspace_fingerprint: sha256:b7fc4235a032ebd0ae291f92e5ec71dd894be444dfc8e22ec96195ae064144b8
+handoff_revision: 6
+updated_at: "2026-08-21T13:25:36+08:00"
+updated_by: "Codex audit"
+base_revision: git:37147770e0f346c21e564484af2864c82d009ac4
+workspace_fingerprint: sha256:848a5a6aa73d21027f8e92c2f350d723cb86bcc071292e468bbb65b41431212e
 context_fingerprint: sha256:27846abba75b153341b21dd871fb41c7cacaed64276f4075dde21112faf9bf22
 status: active
 ---
@@ -13,125 +13,200 @@ status: active
 
 ## Current objective
 
-**RESEARCH_BENCHMARK.md has been written and is the authoritative design
-document.** The current v0.1.0 implementation uses keyword-matching scoring
-which is a **placeholder**, not scientifically valid. The next agent must read
-`RESEARCH_BENCHMARK.md` before any benchmark work and follow its next-steps
-section (Section 11).
+`RESEARCH_BENCHMARK.md` remains the authoritative scientific design document.
+The current package is an **evaluation-framework prototype**, not a validated
+benchmark. The next work must close end-to-end integrity gaps before adding
+more framework surface, then build a small defensible scientific pilot.
 
-The benchmark's central question is: *"Which AI system is genuinely the better
+The benchmark's central question is: *Which AI system is genuinely the better
 research assistant, in what research abilities, under what conditions, and how
-do we know?"*
+do we know?*
 
 ## Confirmed state
 
-### Completed
-
-- **7 task modules** with deterministic keyword scoring (paper_comprehension,
-  idea_generation, literature_synthesis, experimental_design, peer_review,
-  reproduction, open_question_id). Each has `evaluate(model) -> (score, details)`.
-- **CLI** (10 commands): `list`, `show`, `run`, `compare`, `tasks`, `sample`,
-  `data`, `report`, `schema`, `verify`. Options: `--format text|json|html`,
-  `--save`, `--verbose`, `--dry-run`, `--ignore`, `--benchmark`, `--quiet`,
-  `--parallel`, `--save-responses`. Glob patterns in `--tasks`.
-- **Core**: `Benchmark`, `BenchmarkResult`, `TaskResult`. `to_text()`/`to_json()`/
-  `to_html()`/`to_format()`. `compare(models)`.
-- **Tests**: 162 tests covering per-task scoring logic, CLI commands, report
-  rendering, mock mode, error paths. Coverage: 88% (the ~12% gap is live-SDK
-  branches that require API keys).
-- **CI**: 3 jobs (test matrix Ubuntu/Windows x 3.9/3.11/3.13 with 80% coverage
-  gate + ruff, mypy on 3.11, wheel build + clean-venv smoke test).
-- **Docs**: TASK_DEFINITIONS.md, USAGE.md, CONTRIBUTING.md, RESEARCH.md,
-  API.md, ROADMAP.md, FAQ.md, report-schema.json.
-- **Examples**: evaluate_model.py, run_cli_demo.sh, run_cli_demo.ps1, README.md.
-- **Packaging**: SPDX license, py.typed, minimal deps (click only), verified
-  wheel build + install.
-- **Repo hygiene**: .gitattributes, CHANGELOG, CODE_OF_CONDUCT, SECURITY,
-  dependabot, pre-commit, issue/PR templates, .gitignore.
-
-### In progress
-
-- Project memory files (this handoff) are being initialized for the first time.
-
-### Blocked
-
-- Nothing blocked. The repo is in a known-good state.
+- Local repository: `E:\Codex\Projects\caoshurong\researchbench`.
+- Public repository: `https://github.com/CAOShurong/researchbench`.
+- Default branch: `master`; local HEAD and `origin/master` both equal
+  `37147770e0f346c21e564484af2864c82d009ac4`; worktree was clean at audit.
+- Latest public CI run `32449901989` completed successfully at that exact head:
+  six Ubuntu/Windows Python 3.9/3.11/3.13 test jobs, one mypy job, and one
+  build/clean-install smoke job all passed.
+- Public Profile PR `CAOShurong/CAOShurong#90` merged as
+  `981f9ecbb0d9ad1411c2a0804702d4e403b340a7`; PR and post-merge Profile link
+  workflows passed. The public wording now calls ResearchBench a prototype.
 
 ## Changed artifacts
 
-| Path | Change | State |
-|---|---|---|
-| `src/researchbench/` | All modules completed | Clean, committed |
-| `tests/` | 162 tests | Clean, committed |
-| `docs/` | 8+ documentation files | Clean, committed |
-| `examples/` | 4 demo files | Clean, committed |
-| `.github/workflows/ci.yml` | 3-job CI | Clean, committed |
-| `pyproject.toml` | Full metadata, SPDX, minimal deps | Clean, committed |
-| `.ai/` + memory files | First-time initialization | Just created, needs review |
+The latest round changed these substantive areas:
+
+- `src/researchbench/core.py` now adds timestamp, benchmark version, run config,
+  task duration, evaluator version, and captured raw responses to the **Python
+  API path** `Benchmark.run()`.
+- `src/researchbench/subscription.py` defines serializable `SubscriptionRun`,
+  `APIRun`, and `RunRecord` data classes and prevents mixing API and
+  subscription records in one `RunRecord`.
+- `src/researchbench/dataset_schema.py` defines `DatasetItem` plus a manual
+  `validate_item()` function for C1-C16 tags, scoring method, contamination
+  risk, provenance text, and related metadata.
+- The Python 3.9 Click stderr compatibility regression was fixed.
+- README/Profile novelty overclaims were reduced, and the existing 2025
+  ResearchBench name collision is now disclosed.
+- All latest commits are pushed; the old handoff claim of three unpushed commits
+  was stale.
 
 ## Verification evidence
 
-| Check | Result | Executed at / artifact version | Basis / exit code | Evidence or command |
-|---|---|---|---|---|---|
-| `pytest tests` | PASS | 2026-08-21 | exit 0, 165 tests | `--cov --cov-fail-under=80` |
-| `ruff check src tests` | PASS | 2026-08-21 | exit 0 | `ruff check` |
-| `ruff format --check src tests` | PASS | 2026-08-21 | exit 0 | `ruff format --check` |
-| `mypy src` | PASS | 2026-08-21 | exit 0 | `mypy src` |
-| GitHub CI (all 6 matrix jobs) | PASS | 2026-08-21 | run 32447648205 success | `gh run list` |
-| Profile PR #90 (fix false claim) | MERGED | 2026-08-21 | CI SUCCESS | `gh pr view 90` |
-| Run-record metadata implemented | PASS | 2026-08-21 | 3 new tests pass | `test_run_record_metadata`, `test_raw_output_captured` |
+| Check | Result | Exact basis |
+|---|---|---|
+| Python 3.9 full suite | PASS | 184 passed; 90.23% coverage; exit 0 in `E:\Codex\Scratch\researchbench-audit-20260821\venv39` |
+| Python 3.13 full suite | PASS | 184 passed; 90.23% coverage; exit 0 in `E:\Codex\Scratch\researchbench-audit-20260821\venv313` |
+| Ruff lint + format | PASS | `ruff check src tests` and `ruff format --check src tests`; exit 0 |
+| mypy | PASS | `mypy src`; 14 source files; exit 0 |
+| sdist/wheel build | PASS | `researchbench-0.1.0.tar.gz` and `researchbench-0.1.0-py3-none-any.whl`; exit 0 |
+| Clean Python 3.9 wheel install | PASS | `pip check`, `--version`, `list`, and `verify`; exit 0 |
+| CLI invalid-task path | PASS | unknown task exits 2 with a Click validation error |
+| Latest public CI | PASS | GitHub Actions run `32449901989`, eight jobs at exact head `37147770...` |
+| Portable memory check before this rewrite | FAIL | stale recorded workspace fingerprint; this handoff was contradictory |
 
 ## Decisions referenced
 
-- `docs/ROADMAP.md` lists proposed future directions (non-binding).
-- The CAOShurong GitHub Sources program has a `D-20260820-030000-c018` decision
-  authorizing the build of this benchmark. See
-  `E:\Codex\Projects\caoshurong\github-sources-program\DECISIONS.md`.
+- `D-20260821-093000-rb001`: keyword matching is a deterministic v0.1.0
+  placeholder; it is not scientifically valid.
+- `D-20260821-110000-rb006`: reposition publicly as a prototype, disclose the
+  name collision, and correct false novelty claims.
+- `E:\Codex\Projects\caoshurong\github-sources-program\DECISIONS.md` contains
+  parent-program decision `D-20260820-030000-c018` for creating this project.
 
 ## Risks and unknowns
 
-- **CRITICAL: All 7 tasks use keyword substring matching as their sole scoring
-  method.** This is a placeholder, not a scientifically valid evaluation.
-- **CRITICAL: Naming conflict.** A 2025 "ResearchBench" paper and code repo
-  already exists (scientific discovery, idea retrieval, hypothesis generation).
-  Other competitors: ResearcherBench, DeepResearch Bench, RPC-Bench (ACL 2026).
-  The public README and RESEARCH.md previously claimed "no existing benchmark
-  covers this gap" — this was **false** and has been corrected. A rename may be
-  needed (user decision).
-- **CRITICAL: Public claims vs. reality.** The project is a prototype, not a
-  validated benchmark. It has no expert-validated datasets, gold answers, model
-  results, or leaderboard. The README now reflects this honestly.
-- **CI was red on Python 3.9** due to `test_run_benchmark` checking `result.stderr`
-  which is empty on click 8.1.x (py3.9 default `mix_stderr=True`). **Fixed.**
-- **3 unpushed commits** exist locally (not pushed; user will push).
-- **No reproducibility metadata.** Run records contain only the model name.
-- **No subscription-model protocol.** Only API calls are supported.
-- **No contamination prevention.** All papers are well-known classics.
-- The `examples/demo.ipynb` was added by an external agent; not reviewed.
+The following defects and unknowns are material to the next implementation:
+
+### P0: The real CLI does not preserve the new run record
+
+`researchbench run` bypasses `Benchmark.run()` and constructs a fresh,
+mostly-empty `BenchmarkResult`. A clean-wheel run of:
+
+```text
+researchbench run --tasks paper_comprehension --model audit-model --format json --save cli-result.json
+```
+
+exited 0 but produced empty `timestamp`, empty `benchmark_version`, `{}`
+`run_config`, empty `raw_output`, `duration_seconds: 0`, and empty
+`evaluator_version`. The existing tests cover the Python API metadata but do not
+assert these fields through the installed CLI.
+
+The CLI `report --from` path also reconstructs only model, task, score, and
+details, silently dropping any provenance fields that were present. In
+`--parallel` mode, results are appended in completion order rather than the
+canonical task order. `--save-responses` overwrites the per-task file on every
+model call, so only the final response survives for multi-item tasks.
+
+### P0: Dataset validation is defined but not used
+
+`DatasetItem` and `validate_item()` are referenced only by their own module and
+unit tests. None of the seven task datasets instantiate `DatasetItem`; none of
+the runner/CLI paths calls `validate_item()`. The installed command
+`researchbench data paper_comprehension --format json` still exports legacy
+items with only `id,title,abstract,questions`, and questions contain only
+`q,reference_keywords`. Therefore this is a schema prototype, not enforced
+per-item metadata.
+
+### P0: Subscription/API support is a serialization prototype, not execution support
+
+`SubscriptionRun`, `APIRun`, and `RunRecord` are not connected to the benchmark
+runner, CLI, dataset items, imports/exports, or saved reports. The installed CLI
+has no command that creates, imports, validates, or scores these records. Empty
+prompts, dates, outputs, and other mandatory fields are accepted. The code
+correctly models separation, but it does not yet execute the Section 6 protocol.
+
+### P0: Public version/release provenance is inconsistent
+
+The public `v0.1.0` tag points to commit `7bd5a636...`; current `master` is 33
+commits ahead while still reporting package version `0.1.0`. The GitHub release
+has no assets, the release workflow did not run for that old tag, and the PyPI
+JSON endpoint for `researchbench` returns 404. Do not claim that current master
+features are contained in the public v0.1.0 release or installable from PyPI.
+
+### P1: Documentation and public links contradict the code
+
+- README, `RESEARCH_BENCHMARK.md`, `HANDOFF.md`, and `docs/API.md` still contain
+  stale statements that reproducibility/subscription support is absent or raw
+  output is never populated, while the actual status is **partially implemented
+  but not integrated end to end**.
+- `pyproject.toml` still describes the package as "A comprehensive benchmark",
+  which conflicts with the honest prototype positioning.
+- Both JSON schemas use a `$id` under `blob/main/...`; the default branch is
+  `master`, and the current `$id` URL returns HTTP 404.
+- The Profile links to `researchbench#task-categories`, but README has no
+  `Task categories` heading, so the fragment has no destination.
+
+## Scientific validity remains the main product gap
+
+- All seven scorers still use keyword/substring matching. The 184 tests prove
+  those mechanics and software reliability; they do not validate scientific
+  measurement.
+- There are no expert-validated items, evidence sets, gold rubrics, human
+  agreement measurements, contamination-resistant pilots, real model results,
+  or leaderboard.
+- `DatasetItem` currently permits free-text provenance such as an unsupported
+  claim that an expert verified an item. A defensible pilot needs real source
+  identifiers, licensing, item-author/reviewer roles, and an auditable review
+  record.
+- The project name collides with a published 2025 ResearchBench. A rename is
+  still unresolved and should be settled before promotion or a stable release.
 
 ## Next actions
 
-1. **Read `RESEARCH_BENCHMARK.md` in full** — it is the authoritative design
-   document. All benchmark work must reconcile with it.
-2. Research existing benchmarks (Section 8 of RESEARCH_BENCHMARK.md): complete
-   the comparison table with real findings for PaperQA2, SciCode, MLAgentBench,
-   and others.
-3. Design the dataset schema (Section 4.2): per-item metadata, ground truth,
-   contamination risk, hard negatives.
-4. Design the run-record format (Section 7.1): implement run-record capture in
-   `BenchmarkResult` and `TaskResult` (currently `raw_output` is never
-   populated — this must be fixed).
-5. Design expert rubrics for at least 2 pilot tasks (paper comprehension + peer
-   review).
-6. Implement subscription-mode protocol (Section 6.1).
-7. Pilot a contamination-resistant item using a recent/hidden paper.
-8. Validate LLM-as-judge against human ratings on pilot items.
-9. Only then replace keyword-matching scorers with evidence-based evaluation,
-   task by task.
-10. Do NOT push to GitHub unless the user explicitly requests it.
+1. **Close the end-to-end CLI integrity gap.** Route sequential CLI execution
+   through one shared runner; preserve timestamp/version/config/raw output/
+   duration/evaluator; retain all responses; preserve canonical order in
+   parallel mode; restore monkeypatches with `try/finally`; make `report --from`
+   round-trip every provenance field. Add installed-CLI success/failure and
+   sequential/parallel regression tests.
+2. **Integrate dataset validation.** Convert one pilot task to versioned
+   `DatasetItem` records, validate on load/run/export, reject missing/invalid
+   metadata with a non-zero CLI exit, and keep the legacy placeholder clearly
+   labeled. Do not convert all seven tasks before the pilot schema is proven.
+3. **Integrate subscription/API records.** Add a model/config-driven import and
+   export contract that both ResearchBench and the separate SciModelMatrix
+   project can consume. Validate mandatory fields and keep subscription/API
+   runs as distinct conditions. Do not hard-code current model names.
+4. **Synchronize truthful metadata.** Fix the schema `$id`, Profile fragment,
+   package description, README/API/design status sections, and project-memory
+   contradictions. Run link checks and `project_memory.py check`.
+5. **Resolve release identity only after P0 fixes.** Choose a new development
+   version and release boundary; do not retag v0.1.0 or create version churn.
+   A future release must have assets, hashes/attestation where supported, and a
+   clean public download/install/behavior verification. PyPI remains absent.
+6. **Then build a scientific pilot, not more scaffolding.** Complete the
+   evidence-backed competitor table; create a small licensed pilot for paper
+   comprehension and peer review; include hard negatives, exact source
+   provenance, task-specific rubrics, contamination assessment, and blinded
+   human scoring instructions. Validate any LLM judge against human ratings
+   before using it for benchmark claims.
+
+## Coordination boundary
+
+ResearchBench owns task definitions, datasets, rubrics, evaluator logic, and
+the versioned run-record contract. SciModelMatrix owns running model/config
+conditions and analyzing effort/model comparisons. The general OSS task owns
+portfolio evidence, upstream contributions, maintainership, and independent
+adoption. Do not duplicate these responsibilities across agents.
+
+## Claims that remain prohibited
+
+- Do not call the project a validated or comprehensive benchmark.
+- Do not present keyword scores as model capability results.
+- Do not call owner tests, mock runs, downloads, or Profile links independent
+  adoption.
+- Do not claim current master is the released v0.1.0 artifact.
+- Do not claim subscription/API execution or enforced dataset metadata until
+  the installed CLI proves those paths.
 
 ## User decisions required
 
-- Whether to continue with ROADMAP features (LLM-as-judge, expert data) or
-  publish and promote the current version first.
-- Whether to push committed changes to GitHub.
+- A new public name is required before stable promotion because the current
+  name collides with the published 2025 ResearchBench. No rename is authorized
+  by this audit.
+- The release boundary/version after the P0 integrity fixes is a user/product
+  decision. Do not retag or overwrite public v0.1.0.
