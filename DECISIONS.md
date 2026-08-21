@@ -83,9 +83,48 @@ Move the schema file into `src/researchbench/report-schema.json` and add it to
 - A copy remains at `docs/report-schema.json` for browser access.
 - Verified: built wheel, installed in clean venv, schema command produces valid JSON.
 
-## D-20260821-093003-rb004
+## D-20260821-100000-rb005
 
-### Use monkeypatching for --save-responses and --parallel instead of changing task module interface
+### Write RESEARCH_BENCHMARK.md and freeze keyword-matching as a known-invalid placeholder
+- Status: accepted
+- Date: 2026-08-21
+- Deciders: user (direct directive), build session
+- Supersedes: none (extends D-20260821-093000-rb001)
+
+### Context
+
+A full audit of all 7 task modules revealed that every task uses keyword
+substring matching as its sole scoring method. This is scientifically
+indefensible: keyword stuffing scores 100, correct paraphrases that use
+different vocabulary score 0, hallucinations are undetectable, citations are
+unevaluated, and verbosity is rewarded. RESEARCH.md itself diagnosed that
+"research capability resists simple metrics" and prescribed LLM-as-judge +
+human validation + real data — the code chose the opposite.
+
+### Decision
+
+1. Write `RESEARCH_BENCHMARK.md` as the authoritative design document. It
+   defines purpose, philosophy, a 16-capability taxonomy, dataset validity
+   requirements, evaluation principles, subscription/API protocol,
+   reproducibility requirements, and next steps.
+2. Explicitly label the current v0.1.0 keyword-matching scoring as a
+   **placeholder** that is not scientifically valid. Do not present
+   keyword-matching scores as real model evaluations.
+3. Add a mandatory reading notice to `AI_START_HERE.md` and `HANDOFF.md`
+   pointing to `RESEARCH_BENCHMARK.md`.
+4. Retain the CLI/packaging/CI/test infrastructure but redesign the scoring
+   methodology, dataset design, and evaluation protocol per
+   RESEARCH_BENCHMARK.md Section 11.
+
+### Consequences
+
+- No new keyword-matching tasks should be added. The existing 7 tasks' scoring
+  must be replaced with evidence-based evaluation.
+- The 162 existing tests verify the keyword-matching mechanics, not scientific
+  validity. They remain valid as regression tests for the placeholder, but new
+  tests must validate the new evaluation methods.
+- The benchmark cannot claim to measure research capability until the
+  replacement is complete and validated.
 - Status: accepted
 - Date: 2026-08-21
 - Deciders: build session

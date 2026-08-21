@@ -1,5 +1,10 @@
 # AI Project Entry Point
 
+> **Before doing any benchmark work, read `RESEARCH_BENCHMARK.md`. It defines
+> the project's objective, validity requirements, evaluation protocol, and
+> non-negotiable design principles. Do not redesign the benchmark without
+> reconciling changes with this document.**
+
 This project uses **Portable Project Memory v1**. The source of truth is the
 project itself, not any AI conversation.
 

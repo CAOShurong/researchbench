@@ -1,11 +1,11 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 2
-updated_at: "2026-08-21T09:48:00+08:00"
+handoff_revision: 3
+updated_at: "2026-08-21T10:05:00+08:00"
 updated_by: "agent-session"
-base_revision: git:d38fa44bf0466f74d554ad0225086f7a203b75a5
-workspace_fingerprint: sha256:0d906c19e56197d660944731fba8e5aa667cf3f0eb18fbfa9a473d390ae22d59
-context_fingerprint: sha256:d57d4481f2ba5110f49e1ab87e6500cd1b9b734a2dab98c0a87acf9a18b3b6d7
+base_revision: git:379781250bd6e6702070599a9085a4f13e1dbc68
+workspace_fingerprint: sha256:8d6df2dde28182d7b9805e3b3d97d508159653a65f16539812fe220ea19135ee
+context_fingerprint: sha256:4e3af5a5fd5ef791c43f4bc0f99f169a6b521a7222d9f0d01959532c33847a87
 status: active
 ---
 
@@ -13,10 +13,15 @@ status: active
 
 ## Current objective
 
-ResearchBench (v0.1.0) is feature-complete: 162 tests, 10 CLI commands, 7 task
-modules, full docs, CI green, wheel builds and installs cleanly. The next agent
-should continue on the ROADMAP items (LLM-as-judge mode, expert-validated data,
-cross-lingual packs) or address any user-requested features/bugs.
+**RESEARCH_BENCHMARK.md has been written and is the authoritative design
+document.** The current v0.1.0 implementation uses keyword-matching scoring
+which is a **placeholder**, not scientifically valid. The next agent must read
+`RESEARCH_BENCHMARK.md` before any benchmark work and follow its next-steps
+section (Section 11).
+
+The benchmark's central question is: *"Which AI system is genuinely the better
+research assistant, in what research abilities, under what conditions, and how
+do we know?"*
 
 ## Confirmed state
 
@@ -86,22 +91,43 @@ cross-lingual packs) or address any user-requested features/bugs.
 
 ## Risks and unknowns
 
+- **CRITICAL: All 7 tasks use keyword substring matching as their sole scoring
+  method.** This is a placeholder, not a scientifically valid evaluation. It
+  cannot distinguish correct answers from plausible-sounding ones, detect
+  hallucinations, or evaluate citations. See RESEARCH_BENCHMARK.md Section 10.
+- **No reproducibility metadata.** Run records contain only the model name.
+  No timestamp, no model settings, no raw outputs, no cited sources.
+- **No subscription-model protocol.** Only API calls are supported.
+- **No contamination prevention.** All papers are well-known classics likely
+  in training data.
+- **RESEARCH.md's own prescription was not followed.** The background research
+  prescribed LLM-as-judge + human validation + real data; the code chose
+  keyword matching instead.
 - **No fabricated data.** All task data is from the initial scaffold; adding
-  new items requires expert validation.
-- **Known coverage gap.** The ~12% uncovered lines are the live SDK branches
-  (openai/anthropic), which cannot be tested without API keys.
-- **No independent adoption yet.** The repo has been built and polished but not
-  published or promoted. This is the second decisive gap for the parent program.
+  new items requires expert validation per RESEARCH_BENCHMARK.md Section 4.
 - The `examples/demo.ipynb` was added by an external agent; its content has not
   been reviewed by this session.
 
 ## Next actions
 
-1. Verify the documentation links in memory files (PROJECT_CONTEXT, HANDOFF)
-   point to real paths.
-2. Run `python .ai/project_memory.py check .` to validate memory integrity.
-3. Continue with ROADMAP items or user-requested features.
-4. Do NOT push to GitHub unless the user explicitly requests it.
+1. **Read `RESEARCH_BENCHMARK.md` in full** — it is the authoritative design
+   document. All benchmark work must reconcile with it.
+2. Research existing benchmarks (Section 8 of RESEARCH_BENCHMARK.md): complete
+   the comparison table with real findings for PaperQA2, SciCode, MLAgentBench,
+   and others.
+3. Design the dataset schema (Section 4.2): per-item metadata, ground truth,
+   contamination risk, hard negatives.
+4. Design the run-record format (Section 7.1): implement run-record capture in
+   `BenchmarkResult` and `TaskResult` (currently `raw_output` is never
+   populated — this must be fixed).
+5. Design expert rubrics for at least 2 pilot tasks (paper comprehension + peer
+   review).
+6. Implement subscription-mode protocol (Section 6.1).
+7. Pilot a contamination-resistant item using a recent/hidden paper.
+8. Validate LLM-as-judge against human ratings on pilot items.
+9. Only then replace keyword-matching scorers with evidence-based evaluation,
+   task by task.
+10. Do NOT push to GitHub unless the user explicitly requests it.
 
 ## User decisions required
 

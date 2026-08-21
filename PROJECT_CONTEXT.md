@@ -9,12 +9,14 @@ updated_at: "2026-08-21T09:45:00+08:00"
 ## Objective
 
 Build `researchbench`, an open-source benchmark for measuring AI academic and
-research capabilities across 7 task categories. The benchmark fills a confirmed
-gap: no existing suite (MMLU, HumanEval, SWE-bench, GPQA, etc.) comprehensively
-evaluates paper comprehension, idea generation, literature synthesis,
-experimental design, peer review, reproduction diagnosis, or open question
-identification. The project serves as a new owned flagship to close the
-independent-adoption gap for the CAOShurong GitHub Sources program.
+research capabilities. **The authoritative design document is
+`RESEARCH_BENCHMARK.md`** — read it before any benchmark work. The benchmark
+answers: *"Which AI system is genuinely the better research assistant, in what
+research abilities, under what conditions, and how do we know?"*
+
+The current v0.1.0 implementation uses keyword-matching scoring as a
+**placeholder**. It is not scientifically valid and must be replaced per the
+roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 ## Deliverables
 
