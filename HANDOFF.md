@@ -1,10 +1,10 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 6
-updated_at: "2026-08-21T13:25:36+08:00"
-updated_by: "Codex audit"
-base_revision: git:37147770e0f346c21e564484af2864c82d009ac4
-workspace_fingerprint: sha256:848a5a6aa73d21027f8e92c2f350d723cb86bcc071292e468bbb65b41431212e
+handoff_revision: 7
+updated_at: "2026-08-21T15:30:00+08:00"
+updated_by: "agent-session"
+base_revision: git:8c6efc285f9384caa35a62ddfd0ca0ff6a3da663
+workspace_fingerprint: sha256:3f01bae0bdccc90f2365f6d540bcc688584e5e083c89c31b912555de499f8641
 context_fingerprint: sha256:27846abba75b153341b21dd871fb41c7cacaed64276f4075dde21112faf9bf22
 status: active
 ---
@@ -81,64 +81,24 @@ The latest round changed these substantive areas:
 
 The following defects and unknowns are material to the next implementation:
 
-### P0: The real CLI does not preserve the new run record
+### P0 fixes merged (Phases 1-2)
 
-`researchbench run` bypasses `Benchmark.run()` and constructs a fresh,
-mostly-empty `BenchmarkResult`. A clean-wheel run of:
+- **Issue #3 / PR #4**: CLI `run` now routes through `Benchmark.run()` with
+  full provenance (timestamp, version, raw_output, duration, evaluator_version).
+  Parallel preserves canonical order. `--save-responses` appends. `try/finally`
+  restores monkeypatches. `report --from` round-trips all fields. Merge `0e39c16`.
+- **Issue #5 / PR #6**: One pilot `DatasetItem` with structured `Provenance`
+  (source_id, license, review_status) migrated in `paper_comprehension`. CLI
+  `data --validate` calls `validate_item()` and exits 1 on invalid. `data --format
+  json` exports full metadata. Merge `8c6efc2`.
+- 216 tests pass. CI green on all 8 jobs (3.9/3.11/3.13 Ubuntu+Windows, mypy, build).
 
-```text
-researchbench run --tasks paper_comprehension --model audit-model --format json --save cli-result.json
-```
+## Remaining P0/P1
 
-exited 0 but produced empty `timestamp`, empty `benchmark_version`, `{}`
-`run_config`, empty `raw_output`, `duration_seconds: 0`, and empty
-`evaluator_version`. The existing tests cover the Python API metadata but do not
-assert these fields through the installed CLI.
-
-The CLI `report --from` path also reconstructs only model, task, score, and
-details, silently dropping any provenance fields that were present. In
-`--parallel` mode, results are appended in completion order rather than the
-canonical task order. `--save-responses` overwrites the per-task file on every
-model call, so only the final response survives for multi-item tasks.
-
-### P0: Dataset validation is defined but not used
-
-`DatasetItem` and `validate_item()` are referenced only by their own module and
-unit tests. None of the seven task datasets instantiate `DatasetItem`; none of
-the runner/CLI paths calls `validate_item()`. The installed command
-`researchbench data paper_comprehension --format json` still exports legacy
-items with only `id,title,abstract,questions`, and questions contain only
-`q,reference_keywords`. Therefore this is a schema prototype, not enforced
-per-item metadata.
-
-### P0: Subscription/API support is a serialization prototype, not execution support
-
-`SubscriptionRun`, `APIRun`, and `RunRecord` are not connected to the benchmark
-runner, CLI, dataset items, imports/exports, or saved reports. The installed CLI
-has no command that creates, imports, validates, or scores these records. Empty
-prompts, dates, outputs, and other mandatory fields are accepted. The code
-correctly models separation, but it does not yet execute the Section 6 protocol.
-
-### P0: Public version/release provenance is inconsistent
-
-The public `v0.1.0` tag points to commit `7bd5a636...`; current `master` is 33
-commits ahead while still reporting package version `0.1.0`. The GitHub release
-has no assets, the release workflow did not run for that old tag, and the PyPI
-JSON endpoint for `researchbench` returns 404. Do not claim that current master
-features are contained in the public v0.1.0 release or installable from PyPI.
-
-### P1: Documentation and public links contradict the code
-
-- README, `RESEARCH_BENCHMARK.md`, `HANDOFF.md`, and `docs/API.md` still contain
-  stale statements that reproducibility/subscription support is absent or raw
-  output is never populated, while the actual status is **partially implemented
-  but not integrated end to end**.
-- `pyproject.toml` still describes the package as "A comprehensive benchmark",
-  which conflicts with the honest prototype positioning.
-- Both JSON schemas use a `$id` under `blob/main/...`; the default branch is
-  `master`, and the current `$id` URL returns HTTP 404.
-- The Profile links to `researchbench#task-categories`, but README has no
-  `Task categories` heading, so the fragment has no destination.
+- Subscription/API records not yet connected to runner/CLI (Phase 3).
+- Docs still say "no reproducibility" etc. — need sync (Phase 4).
+- No scientific pilot yet (Phase 5).
+- v0.1.0 tag is stale; no new release until P0 closed.
 
 ## Scientific validity remains the main product gap
 
