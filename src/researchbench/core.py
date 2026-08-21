@@ -161,6 +161,7 @@ class Benchmark:
         parallel: bool = False,
         benchmark: bool = False,
         save_responses_dir: str | None = None,
+        allow_draft: bool = False,
         **kwargs,
     ) -> BenchmarkResult:
         """Run all tasks against *model* and return a fully-populated run record.
@@ -170,10 +171,14 @@ class Benchmark:
         When *benchmark* is True, per-task timing is printed to stderr.
         When *save_responses_dir* is set, every raw model response is appended
         (not overwritten) to ``<dir>/<task_name>.txt``.
+        When *allow_draft* is False, tasks with draft-only dataset items are
+        rejected before any model call.
         Monkeypatches on ``_call_model`` are always restored via try/finally.
         """
         import sys
         from pathlib import Path
+
+        from researchbench.dataset_schema import is_runnable, validate_item
 
         timestamp = datetime.now(timezone.utc).isoformat()
         run_config: dict[str, Any] = {
@@ -191,6 +196,28 @@ class Benchmark:
             benchmark_version=__version__,
             run_config=run_config,
         )
+
+        # Validate dataset items before any model call. If a task module has
+        # a DATASET (or PILOT_ITEMS) collection of DatasetItem objects, every
+        # item must pass validate_item() and must be runnable (reviewed or
+        # validated) unless allow_draft is True.
+        for name in self.tasks:
+            mod = importlib.import_module(f"researchbench.tasks.{name}")
+            ds = getattr(mod, "DATASET", None) or getattr(mod, "PILOT_ITEMS", None)
+            if ds is None:
+                continue  # task uses legacy data, no validation
+            for item in ds:
+                errs = validate_item(item)
+                if errs:
+                    raise ValueError(
+                        f"Task '{name}' item '{item.id}' failed validation: {'; '.join(errs)}"
+                    )
+                if not allow_draft and not is_runnable(item):
+                    raise ValueError(
+                        f"Task '{name}' item '{item.id}' has review_status="
+                        f"'{item.provenance.review_status}' (draft). "
+                        f"Use --allow-draft to run draft items."
+                    )
 
         # Set up per-task monkeypatch wrappers for raw-output capture and
         # --save-responses. ALL wrappers are installed before ANY evaluation

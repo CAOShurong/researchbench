@@ -1,6 +1,6 @@
 """Tests for the dataset item schema (RESEARCH_BENCHMARK.md §4.2)."""
 
-from researchbench.dataset_schema import DatasetItem, validate_item
+from researchbench.dataset_schema import DatasetItem, Provenance, validate_item
 
 
 def _valid_item(**overrides) -> DatasetItem:
@@ -10,6 +10,14 @@ def _valid_item(**overrides) -> DatasetItem:
         "ground_truth": "The Transformer uses self-attention.",
         "ground_truth_source": "expert: verified against arXiv:1706.03762",
         "scoring_method": "rubric",
+        "provenance": Provenance(
+            source_id="arXiv:1706.03762",
+            source_type="paper",
+            license="MIT",
+            author_role="benchmark_author",
+            reviewer_role="professor",
+            review_status="reviewed",
+        ),
         "contamination_risk": "high",
     }
     base.update(overrides)

@@ -1,9 +1,9 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 7
-updated_at: "2026-08-21T15:30:00+08:00"
-updated_by: "agent-session"
-base_revision: git:8c6efc285f9384caa35a62ddfd0ca0ff6a3da663
+handoff_revision: 8
+updated_at: "2026-08-21T21:26:37+08:00"
+updated_by: "Codex independent audit"
+base_revision: git:ecedf56a9ff37579da23d1e50dae4ca4e4c8432c
 workspace_fingerprint: sha256:3f01bae0bdccc90f2365f6d540bcc688584e5e083c89c31b912555de499f8641
 context_fingerprint: sha256:27846abba75b153341b21dd871fb41c7cacaed64276f4075dde21112faf9bf22
 status: active
@@ -27,8 +27,9 @@ do we know?*
 - Local repository: `E:\Codex\Projects\caoshurong\researchbench`.
 - Public repository: `https://github.com/CAOShurong/researchbench`.
 - Default branch: `master`; local HEAD and `origin/master` both equal
-  `37147770e0f346c21e564484af2864c82d009ac4`; worktree was clean at audit.
-- Latest public CI run `32449901989` completed successfully at that exact head:
+  `ecedf56a9ff37579da23d1e50dae4ca4e4c8432c`; the tracked worktree was clean
+  before this handoff-only update.
+- Latest public CI run `32485549359` completed successfully at that exact head:
   six Ubuntu/Windows Python 3.9/3.11/3.13 test jobs, one mypy job, and one
   build/clean-install smoke job all passed.
 - Public Profile PR `CAOShurong/CAOShurong#90` merged as
@@ -58,15 +59,17 @@ The latest round changed these substantive areas:
 
 | Check | Result | Exact basis |
 |---|---|---|
-| Python 3.9 full suite | PASS | 184 passed; 90.23% coverage; exit 0 in `E:\Codex\Scratch\researchbench-audit-20260821\venv39` |
-| Python 3.13 full suite | PASS | 184 passed; 90.23% coverage; exit 0 in `E:\Codex\Scratch\researchbench-audit-20260821\venv313` |
+| Python 3.9 full suite | PASS | 216 passed; 88.25% coverage; exit 0 in fresh `E:\Codex\Scratch\researchbench-round2-audit-20260821\venv39` |
+| Python 3.13 full suite | PASS | 216 passed; 88.25% coverage; exit 0 in fresh `E:\Codex\Scratch\researchbench-round2-audit-20260821\venv313` |
 | Ruff lint + format | PASS | `ruff check src tests` and `ruff format --check src tests`; exit 0 |
 | mypy | PASS | `mypy src`; 14 source files; exit 0 |
-| sdist/wheel build | PASS | `researchbench-0.1.0.tar.gz` and `researchbench-0.1.0-py3-none-any.whl`; exit 0 |
-| Clean Python 3.9 wheel install | PASS | `pip check`, `--version`, `list`, and `verify`; exit 0 |
+| sdist/wheel build | PASS | `researchbench-0.1.0.tar.gz` and `researchbench-0.1.0-py3-none-any.whl`; exit 0; hashes in the independent audit |
+| Clean Python 3.13 wheel install | PASS | installed from wheel outside the checkout; `--version`, `verify`, data validation, real run/save/raw-response, and invalid-run paths observed |
 | CLI invalid-task path | PASS | unknown task exits 2 with a Click validation error |
-| Latest public CI | PASS | GitHub Actions run `32449901989`, eight jobs at exact head `37147770...` |
-| Portable memory check before this rewrite | FAIL | stale recorded workspace fingerprint; this handoff was contradictory |
+| Latest public CI | PASS | GitHub Actions run `32485549359`, eight jobs at exact head `ecedf56...` |
+| Portable memory structure | PASS | `project_memory.py check`; semantic contradictions required this manual audit and revision |
+
+Detailed evidence: `E:\Codex\Workspaces\Dated\2026-08-21\researchbench-round2-audit\outputs\AUDIT.md`.
 
 ## Decisions referenced
 
@@ -81,7 +84,7 @@ The latest round changed these substantive areas:
 
 The following defects and unknowns are material to the next implementation:
 
-### P0 fixes merged (Phases 1-2)
+### P0 Phase 1 is closed; Phase 2 is only partially closed
 
 - **Issue #3 / PR #4**: CLI `run` now routes through `Benchmark.run()` with
   full provenance (timestamp, version, raw_output, duration, evaluator_version).
@@ -91,10 +94,22 @@ The following defects and unknowns are material to the next implementation:
   (source_id, license, review_status) migrated in `paper_comprehension`. CLI
   `data --validate` calls `validate_item()` and exits 1 on invalid. `data --format
   json` exports full metadata. Merge `8c6efc2`.
-- 216 tests pass. CI green on all 8 jobs (3.9/3.11/3.13 Ubuntu+Windows, mypy, build).
+- **Critical limit found by the independent audit:** PR #6 did not integrate
+  `DatasetItem` validation into `Benchmark.run()`. The runner still evaluates
+  legacy `PAPERS`. An in-memory invalid pilot item failed `validate_item()` but
+  the benchmark still ran successfully. Text data reports two legacy items,
+  while JSON exports one pilot item. Phase 2 is not end-to-end complete.
+- `DatasetItem.provenance` remains optional, and `RunRecord` accepts empty
+  required-looking identifiers. `researchbench data does_not_exist` also exits
+  0 despite reporting an unknown task.
+- 216 tests pass. CI is green on all 8 jobs (3.9/3.11/3.13 Ubuntu+Windows, mypy,
+  build), but those tests do not cover the enforcement failures above.
 
 ## Remaining P0/P1
 
+- Dataset records are not the authoritative run input and are not validated on
+  run/load; text, JSON, and runner paths expose different collections.
+- Runnable-item provenance and subscription/API record fields are not enforced.
 - Subscription/API records not yet connected to runner/CLI (Phase 3).
 - Docs still say "no reproducibility" etc. — need sync (Phase 4).
 - No scientific pilot yet (Phase 5).
@@ -102,7 +117,7 @@ The following defects and unknowns are material to the next implementation:
 
 ## Scientific validity remains the main product gap
 
-- All seven scorers still use keyword/substring matching. The 184 tests prove
+- All seven scorers still use keyword/substring matching. The 216 tests prove
   those mechanics and software reliability; they do not validate scientific
   measurement.
 - There are no expert-validated items, evidence sets, gold rubrics, human
@@ -117,16 +132,16 @@ The following defects and unknowns are material to the next implementation:
 
 ## Next actions
 
-1. **Close the end-to-end CLI integrity gap.** Route sequential CLI execution
-   through one shared runner; preserve timestamp/version/config/raw output/
-   duration/evaluator; retain all responses; preserve canonical order in
-   parallel mode; restore monkeypatches with `try/finally`; make `report --from`
-   round-trip every provenance field. Add installed-CLI success/failure and
-   sequential/parallel regression tests.
-2. **Integrate dataset validation.** Convert one pilot task to versioned
-   `DatasetItem` records, validate on load/run/export, reject missing/invalid
-   metadata with a non-zero CLI exit, and keep the legacy placeholder clearly
-   labeled. Do not convert all seven tasks before the pilot schema is proven.
+1. **Finish Phase 2 with one authoritative dataset path.** Make the versioned
+   `DatasetItem` collection the source used by `sample`, text/JSON `data`, and
+   `Benchmark.run()` for `paper_comprehension`; remove or explicitly quarantine
+   the legacy split. Validate before sequential and parallel execution and fail
+   nonzero before any model call when metadata is invalid.
+2. **Enforce a runnable-item contract.** Require structured provenance,
+   non-unknown licensing, source identity, author/reviewer roles, and an
+   explicit eligible review state. Keep draft items exportable only under an
+   explicit draft path. Make unknown `data` tasks nonzero and add installed-CLI
+   success/failure tests.
 3. **Integrate subscription/API records.** Add a model/config-driven import and
    export contract that both ResearchBench and the separate SciModelMatrix
    project can consume. Validate mandatory fields and keep subscription/API

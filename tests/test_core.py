@@ -15,7 +15,7 @@ def bench():
 
 @pytest.fixture
 def result(bench):
-    return bench.run(model="mock")
+    return bench.run(model="mock", allow_draft=True)
 
 
 class TestBenchmarkResult:
@@ -53,7 +53,7 @@ class TestBenchmarkResult:
 
     def test_run_record_metadata(self, bench):
         """RESEARCH_BENCHMARK.md Section 7.1: run records must capture metadata."""
-        result = bench.run(model="gpt-4o")
+        result = bench.run(model="gpt-4o", allow_draft=True)
         assert result.timestamp  # ISO 8601 string
         assert result.benchmark_version  # e.g. "0.1.0"
         assert result.run_config["model"] == "gpt-4o"
@@ -64,12 +64,12 @@ class TestBenchmarkResult:
 
     def test_raw_output_captured(self, bench):
         """RESEARCH_BENCHMARK.md Section 7.2: raw outputs must not be discarded."""
-        result = bench.run(model="gpt-4o", capture_raw=True)
+        result = bench.run(model="gpt-4o", capture_raw=True, allow_draft=True)
         for r in result.results:
             assert r.raw_output != "", f"{r.task_name} raw_output is empty"
 
     def test_raw_output_disabled(self, bench):
-        result = bench.run(model="gpt-4o", capture_raw=False)
+        result = bench.run(model="gpt-4o", capture_raw=False, allow_draft=True)
         for r in result.results:
             assert r.raw_output == ""
 
@@ -117,7 +117,9 @@ class TestBenchmarkRunner:
         ]
 
     def test_compare_returns_one_result_per_model(self, bench):
-        results = bench.compare(models=["gpt-4o", "claude-3-opus", "unknown-model"])
+        results = bench.compare(
+            allow_draft=True, models=["gpt-4o", "claude-3-opus", "unknown-model"]
+        )
         assert len(results) == 3
         assert [r.model for r in results] == ["gpt-4o", "claude-3-opus", "unknown-model"]
         for r in results:
@@ -126,6 +128,6 @@ class TestBenchmarkRunner:
 
     def test_compare_preserves_task_subset(self):
         bench = Benchmark(tasks=["paper_comprehension", "open_question_id"])
-        results = bench.compare(models=["gpt-4o", "claude-3-opus"])
+        results = bench.compare(allow_draft=True, models=["gpt-4o", "claude-3-opus"])
         for r in results:
             assert {x.task_name for x in r.results} == {"paper_comprehension", "open_question_id"}

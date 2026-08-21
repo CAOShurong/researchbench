@@ -2,30 +2,6 @@
 
 Defines the mandatory per-item metadata structure for benchmark dataset items.
 Every dataset item must carry this metadata to make rigorous evaluation possible.
-
-Usage:
-    from researchbench.dataset_schema import DatasetItem, Provenance, validate_item
-
-    item = DatasetItem(
-        id="paper_comprehension/attention-2017/q1",
-        capability_tags=["C5", "C1"],
-        ground_truth="The Transformer replaces recurrence and convolution with
-                       self-attention; key limitation is quadratic complexity.",
-        ground_truth_source="paper",
-        scoring_method="keyword_match_placeholder",
-        contamination_risk="high",
-        provenance=Provenance(
-            source_id="arXiv:1706.03762",
-            source_type="paper",
-            license="arXiv-nonexclusive",
-            author_role="benchmark_author",
-            reviewer_role="",
-            review_status="draft",
-        ),
-        task_data={"title": "Attention Is All You Need", "abstract": "...", ...},
-    )
-    errors = validate_item(item)
-    assert not errors
 """
 
 from __future__ import annotations
@@ -33,7 +9,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-# All 16 capabilities from RESEARCH_BENCHMARK.md Section 3
 VALID_CAPABILITIES = {
     "C1",
     "C2",
@@ -75,20 +50,19 @@ VALID_SOURCE_TYPES = {
 
 VALID_REVIEW_STATUS = {"draft", "reviewed", "validated", "rejected"}
 
+RUNNABLE_REVIEW_STATUS = {"reviewed", "validated"}
+
 
 @dataclass
 class Provenance:
-    """Verifiable provenance for a dataset item.
+    """Verifiable provenance for a dataset item."""
 
-    Replaces free-text ground_truth_source with structured, auditable fields.
-    """
-
-    source_id: str  # e.g. "arXiv:1706.03762", "DOI:10.xxx", "expert:jane-doe"
-    source_type: str = "paper"  # one of VALID_SOURCE_TYPES
+    source_id: str
+    source_type: str = "paper"
     license: str = "unknown"
-    author_role: str = ""  # e.g. "benchmark_author", "domain_researcher"
-    reviewer_role: str = ""  # e.g. "phd_student", "postdoc", "professor"
-    review_status: str = "draft"  # one of VALID_REVIEW_STATUS
+    author_role: str = ""
+    reviewer_role: str = ""
+    review_status: str = "draft"
     review_notes: str = ""
 
     def to_dict(self) -> dict[str, str]:
@@ -145,7 +119,7 @@ def validate_item(item: DatasetItem) -> list[str]:
         errors.append("id is required")
 
     if not item.capability_tags:
-        errors.append("capability_tags is required (at least one of C1–C16)")
+        errors.append("capability_tags is required (at least one of C1-C16)")
     else:
         invalid = [t for t in item.capability_tags if t not in VALID_CAPABILITIES]
         if invalid:
@@ -157,7 +131,7 @@ def validate_item(item: DatasetItem) -> list[str]:
         errors.append("ground_truth is required")
 
     if not item.ground_truth_source:
-        errors.append("ground_truth_source is required (who produced it and how)")
+        errors.append("ground_truth_source is required")
 
     if item.scoring_method not in VALID_SCORING_METHODS:
         errors.append(
@@ -171,18 +145,35 @@ def validate_item(item: DatasetItem) -> list[str]:
             f"Valid: {sorted(VALID_CONTAMINATION_RISK)}"
         )
 
-    if item.provenance is not None:
-        if not item.provenance.source_id:
-            errors.append("provenance.source_id is required when provenance is provided")
-        if item.provenance.source_type not in VALID_SOURCE_TYPES:
+    # Provenance is REQUIRED for all items
+    if item.provenance is None:
+        errors.append("provenance is required (must not be None)")
+    else:
+        p = item.provenance
+        if not p.source_id:
+            errors.append("provenance.source_id is required")
+        if p.source_type not in VALID_SOURCE_TYPES:
             errors.append(
-                f"invalid provenance.source_type: '{item.provenance.source_type}'. "
+                f"invalid provenance.source_type: '{p.source_type}'. "
                 f"Valid: {sorted(VALID_SOURCE_TYPES)}"
             )
-        if item.provenance.review_status not in VALID_REVIEW_STATUS:
+        if not p.license or p.license == "unknown":
+            errors.append("provenance.license is required and must not be 'unknown'")
+        if not p.author_role:
+            errors.append("provenance.author_role is required")
+        if not p.reviewer_role and p.review_status in RUNNABLE_REVIEW_STATUS:
+            errors.append("provenance.reviewer_role is required for reviewed/validated items")
+        if p.review_status not in VALID_REVIEW_STATUS:
             errors.append(
-                f"invalid provenance.review_status: '{item.provenance.review_status}'. "
+                f"invalid provenance.review_status: '{p.review_status}'. "
                 f"Valid: {sorted(VALID_REVIEW_STATUS)}"
             )
 
     return errors
+
+
+def is_runnable(item: DatasetItem) -> bool:
+    """Return True if the item's review_status allows it to be run as a benchmark item."""
+    if item.provenance is None:
+        return False
+    return item.provenance.review_status in RUNNABLE_REVIEW_STATUS

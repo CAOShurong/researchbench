@@ -8,19 +8,14 @@ no-API-key mock fallback path.
 import pytest
 
 from researchbench.tasks import paper_comprehension as pc
-from researchbench.tasks.paper_comprehension import PAPERS, PaperComprehension
+from researchbench.tasks.paper_comprehension import DATASET, PaperComprehension
 
 
 def _perfect_response() -> str:
-    """A response containing every reference keyword across all papers/questions.
-
-    With this input every question's match_count equals its reference keyword
-    count, so correctness caps at 1.0 and the aggregate score is exactly 100.
-    """
+    """A response containing every reference keyword from the authoritative DATASET."""
     kws = []
-    for paper in PAPERS:
-        for q in paper["questions"]:
-            kws.extend(q["reference_keywords"])
+    for item in DATASET:
+        kws.extend(item.task_data.get("reference_keywords", []))
     return " ".join(kws)
 
 
@@ -31,22 +26,21 @@ def task():
 
 class TestFixtureStructure:
     def test_papers_non_empty(self):
-        assert len(PAPERS) >= 1
+        assert len(DATASET) >= 1
 
     def test_each_paper_has_required_keys(self):
-        for paper in PAPERS:
-            assert "id" in paper and isinstance(paper["id"], str) and paper["id"]
-            assert paper.get("title")
-            assert paper.get("abstract")
-            assert "questions" in paper and len(paper["questions"]) >= 1
+        for item in DATASET:
+            assert item.id
+            assert item.task_data.get("title")
+            assert item.task_data.get("abstract")
+            assert item.task_data.get("question")
+            assert item.task_data.get("reference_keywords")
 
     def test_each_question_has_keywords(self):
-        for paper in PAPERS:
-            for q in paper["questions"]:
-                assert q.get("q")
-                assert "reference_keywords" in q
-                assert isinstance(q["reference_keywords"], list)
-                assert len(q["reference_keywords"]) >= 1
+        for item in DATASET:
+            kws = item.task_data.get("reference_keywords", [])
+            assert isinstance(kws, list)
+            assert len(kws) >= 1
 
 
 class TestScoringLogic:
@@ -61,32 +55,32 @@ class TestScoringLogic:
         assert score == pytest.approx(0.0)
 
     def test_partial_response_scores_between(self, task, monkeypatch):
-        # Only the first paper's first-question keywords -> low but nonzero.
-        first_kws = PAPERS[0]["questions"][0]["reference_keywords"]
+        # Only the first item's keywords -> score should be < 100 (not all keywords).
+        first_kws = DATASET[0].task_data["reference_keywords"][:2]
         monkeypatch.setattr(pc, "_call_model", lambda model, prompt: " ".join(first_kws))
         score, _ = task.evaluate(model="gpt-4o")
         assert 0.0 < score < 100.0
 
     def test_correctness_capped_at_one(self, task, monkeypatch):
-        """The 1.5x weight must never let a single question exceed 1.0."""
+        """The 1.5x weight must never let a single item exceed 1.0."""
         monkeypatch.setattr(pc, "_call_model", lambda model, prompt: _perfect_response())
         _, details = task.evaluate(model="gpt-4o")
-        for paper in PAPERS:
-            per = details["per_paper"][paper["id"]]
+        for item in DATASET:
+            per = details["per_item"][item.id]
             assert per["score"] <= per["max"]
 
     def test_details_structure(self, task, monkeypatch):
         monkeypatch.setattr(pc, "_call_model", lambda model, prompt: _perfect_response())
         _, details = task.evaluate(model="gpt-4o")
-        assert "per_paper" in details
-        assert details["total_questions"] == len(PAPERS) * 3
-        for paper in PAPERS:
-            entry = details["per_paper"][paper["id"]]
+        assert "per_item" in details
+        assert details["total_items"] == len(DATASET)
+        for item in DATASET:
+            entry = details["per_item"][item.id]
             assert "score" in entry and "max" in entry
-            assert entry["max"] == len(paper["questions"])
+            assert entry["max"] == 1
 
     def test_case_insensitive_keyword_match(self, task, monkeypatch):
-        kw = PAPERS[0]["questions"][0]["reference_keywords"][0]
+        kw = DATASET[0].task_data["reference_keywords"][0]
         monkeypatch.setattr(pc, "_call_model", lambda model, prompt: kw.upper())
         score, _ = task.evaluate(model="gpt-4o")
         assert score > 0.0
