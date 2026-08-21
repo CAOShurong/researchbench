@@ -1,10 +1,10 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 8
-updated_at: "2026-08-21T21:26:37+08:00"
-updated_by: "Codex independent audit"
-base_revision: git:ecedf56a9ff37579da23d1e50dae4ca4e4c8432c
-workspace_fingerprint: sha256:3f01bae0bdccc90f2365f6d540bcc688584e5e083c89c31b912555de499f8641
+handoff_revision: 9
+updated_at: "2026-08-21T20:50:00+08:00"
+updated_by: "agent-session"
+base_revision: git:49bea451a23bf1e7d9bf8614d94d880dbe4fe2b2
+workspace_fingerprint: sha256:c17bc42e1e646fc714f26b229befd07721b9a26bdd71effa5b7a96d40e9415a4
 context_fingerprint: sha256:27846abba75b153341b21dd871fb41c7cacaed64276f4075dde21112faf9bf22
 status: active
 ---
@@ -84,36 +84,21 @@ Detailed evidence: `E:\Codex\Workspaces\Dated\2026-08-21\researchbench-round2-au
 
 The following defects and unknowns are material to the next implementation:
 
-### P0 Phase 1 is closed; Phase 2 is only partially closed
+## P0 fixes merged (Phases 1-3)
 
-- **Issue #3 / PR #4**: CLI `run` now routes through `Benchmark.run()` with
-  full provenance (timestamp, version, raw_output, duration, evaluator_version).
-  Parallel preserves canonical order. `--save-responses` appends. `try/finally`
-  restores monkeypatches. `report --from` round-trips all fields. Merge `0e39c16`.
-- **Issue #5 / PR #6**: One pilot `DatasetItem` with structured `Provenance`
-  (source_id, license, review_status) migrated in `paper_comprehension`. CLI
-  `data --validate` calls `validate_item()` and exits 1 on invalid. `data --format
-  json` exports full metadata. Merge `8c6efc2`.
-- **Critical limit found by the independent audit:** PR #6 did not integrate
-  `DatasetItem` validation into `Benchmark.run()`. The runner still evaluates
-  legacy `PAPERS`. An in-memory invalid pilot item failed `validate_item()` but
-  the benchmark still ran successfully. Text data reports two legacy items,
-  while JSON exports one pilot item. Phase 2 is not end-to-end complete.
-- `DatasetItem.provenance` remains optional, and `RunRecord` accepts empty
-  required-looking identifiers. `researchbench data does_not_exist` also exits
-  0 despite reporting an unknown task.
-- 216 tests pass. CI is green on all 8 jobs (3.9/3.11/3.13 Ubuntu+Windows, mypy,
-  build), but those tests do not cover the enforcement failures above.
+- **Issue #3 / PR #4**: CLI `run` routes through `Benchmark.run()` with full provenance. Merge `0e39c16`.
+- **Issue #5 / PR #8**: Authoritative `DATASET` for paper_comprehension; validate before model call; reject draft without `--allow-draft`; provenance required; `data unknown_task` exits 1. Merge `cc61bc0`.
+- **Issue #7 / PR #9**: `RunRecord` CLI with import/validate/export; mandatory field validation; no hardcoded model names. Merge `49bea45`.
+- 260 tests pass. CI green on all 8 jobs (3.9/3.11/3.13 Ubuntu+Windows, mypy, build).
+- Phase 4 (doc sync) in progress on `codex/p4-doc-sync`.
 
-## Remaining P0/P1
+## Remaining work
 
-- Dataset records are not the authoritative run input and are not validated on
-  run/load; text, JSON, and runner paths expose different collections.
-- Runnable-item provenance and subscription/API record fields are not enforced.
-- Subscription/API records not yet connected to runner/CLI (Phase 3).
-- Docs still say "no reproducibility" etc. — need sync (Phase 4).
-- No scientific pilot yet (Phase 5).
-- v0.1.0 tag is stale; no new release until P0 closed.
+- Phase 5: scientific pilot (competitor table, expert rubrics, contamination-resistant items)
+- Name collision with 2025 ResearchBench unresolved
+- v0.1.0 tag stale; no new release until scientific pilot
+- All scorers still use keyword matching (placeholder)
+- No real model evaluation (only mock mode tested)
 
 ## Scientific validity remains the main product gap
 

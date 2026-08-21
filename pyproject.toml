@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "researchbench"
 version = "0.1.0"
-description = "A comprehensive benchmark for evaluating AI academic and research capabilities"
+description = "A research-capability evaluation framework prototype for AI academic and research abilities"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.9"

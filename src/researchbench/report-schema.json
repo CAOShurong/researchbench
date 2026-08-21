@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/CAOShurong/researchbench/blob/main/src/researchbench/report-schema.json",
+  "$id": "https://github.com/CAOShurong/researchbench/blob/master/src/researchbench/report-schema.json",
   "title": "ResearchBench Run Record",
   "description": "Schema for a single-model ResearchBench evaluation run record (RESEARCH_BENCHMARK.md Section 7.1)",
   "type": "object",
