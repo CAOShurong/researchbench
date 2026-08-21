@@ -457,20 +457,59 @@ def verify() -> None:
     "--format", "fmt", type=click.Choice(["text", "json"], case_sensitive=False), default="text"
 )
 @click.option("--save", "save_path", default=None, help="Write to file.")
-def data(task_name: str, fmt: str, save_path: str | None) -> None:
+@click.option(
+    "--validate",
+    is_flag=True,
+    default=False,
+    help="Validate pilot DatasetItems before export (rejects invalid items).",
+)
+def data(task_name: str, fmt: str, save_path: str | None, validate: bool) -> None:
     """Export a task's dataset as JSON."""
     if task_name not in TASK_INFO:
         click.echo(f"Unknown task: {task_name}")
         click.echo("Available: " + ", ".join(TASK_INFO.keys()))
         return
+
+    # If --validate, check pilot DatasetItems if the task module has them.
+    if validate:
+        import importlib as _il
+
+        from researchbench.dataset_schema import validate_item
+
+        mod = _il.import_module(f"researchbench.tasks.{task_name}")
+        pilot_items = getattr(mod, "PILOT_ITEMS", None)
+        if pilot_items is not None:
+            all_errors: list[str] = []
+            for item in pilot_items:
+                errs = validate_item(item)
+                if errs:
+                    all_errors.append(f"  {item.id}: {'; '.join(errs)}")
+            if all_errors:
+                click.echo(f"Validation FAILED for {task_name}:")
+                for e in all_errors:
+                    click.echo(e)
+                raise SystemExit(1)
+            click.echo(f"Validation passed: {len(pilot_items)} pilot item(s) OK")
+
     ds, size = _get_task_data(task_name)
     if ds is None:
         click.echo(f"No dataset found for {task_name}")
         return
     if fmt == "json":
+        # If pilot items exist, export them with full metadata
+        import importlib as _il2
         import json
 
-        _emit(json.dumps(ds, indent=2, default=str), fmt, save_path)
+        mod = _il2.import_module(f"researchbench.tasks.{task_name}")
+        pilot_items = getattr(mod, "PILOT_ITEMS", None)
+        if pilot_items is not None:
+            _emit(
+                json.dumps([item.to_dict() for item in pilot_items], indent=2, default=str),
+                fmt,
+                save_path,
+            )
+        else:
+            _emit(json.dumps(ds, indent=2, default=str), fmt, save_path)
     else:
         click.echo(f"Task: {task_name}")
         click.echo(f"Dataset size: {size} item(s)")

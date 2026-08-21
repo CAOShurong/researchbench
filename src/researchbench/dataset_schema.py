@@ -3,26 +3,26 @@
 Defines the mandatory per-item metadata structure for benchmark dataset items.
 Every dataset item must carry this metadata to make rigorous evaluation possible.
 
-This is a data definition module — it does not contain scoring logic. It
-defines what a valid dataset item looks like so that:
-- item authors know what fields to provide;
-- the evaluation framework can validate items before use;
-- downstream consumers can inspect item provenance and contamination risk.
-
 Usage:
-    from researchbench.dataset_schema import DatasetItem, validate_item
+    from researchbench.dataset_schema import DatasetItem, Provenance, validate_item
 
     item = DatasetItem(
         id="paper_comprehension/attention-2017/q1",
         capability_tags=["C5", "C1"],
         ground_truth="The Transformer replaces recurrence and convolution with
                        self-attention; key limitation is quadratic complexity.",
-        ground_truth_source="expert: ML researcher, verified against the paper",
-        scoring_method="rubric",
+        ground_truth_source="paper",
+        scoring_method="keyword_match_placeholder",
         contamination_risk="high",
-        hard_negatives=[],
-        expert_notes="Classic paper; likely in training data. Use for
-                       methodology critique, not factual recall.",
+        provenance=Provenance(
+            source_id="arXiv:1706.03762",
+            source_type="paper",
+            license="arXiv-nonexclusive",
+            author_role="benchmark_author",
+            reviewer_role="",
+            review_status="draft",
+        ),
+        task_data={"title": "Attention Is All You Need", "abstract": "...", ...},
     )
     errors = validate_item(item)
     assert not errors
@@ -64,6 +64,44 @@ VALID_SCORING_METHODS = {
 
 VALID_CONTAMINATION_RISK = {"low", "medium", "high"}
 
+VALID_SOURCE_TYPES = {
+    "paper",
+    "expert",
+    "author_confirmed",
+    "later_paper",
+    "expert_curated",
+    "synthetic",
+}
+
+VALID_REVIEW_STATUS = {"draft", "reviewed", "validated", "rejected"}
+
+
+@dataclass
+class Provenance:
+    """Verifiable provenance for a dataset item.
+
+    Replaces free-text ground_truth_source with structured, auditable fields.
+    """
+
+    source_id: str  # e.g. "arXiv:1706.03762", "DOI:10.xxx", "expert:jane-doe"
+    source_type: str = "paper"  # one of VALID_SOURCE_TYPES
+    license: str = "unknown"
+    author_role: str = ""  # e.g. "benchmark_author", "domain_researcher"
+    reviewer_role: str = ""  # e.g. "phd_student", "postdoc", "professor"
+    review_status: str = "draft"  # one of VALID_REVIEW_STATUS
+    review_notes: str = ""
+
+    def to_dict(self) -> dict[str, str]:
+        return {
+            "source_id": self.source_id,
+            "source_type": self.source_type,
+            "license": self.license,
+            "author_role": self.author_role,
+            "reviewer_role": self.reviewer_role,
+            "review_status": self.review_status,
+            "review_notes": self.review_notes,
+        }
+
 
 @dataclass
 class DatasetItem:
@@ -75,11 +113,28 @@ class DatasetItem:
     ground_truth_source: str
     scoring_method: str
     contamination_risk: str = "medium"
+    provenance: Provenance | None = None
     hard_negatives: list[dict[str, Any]] = field(default_factory=list)
     expert_notes: str = ""
     version: str = "1.0"
-    # The actual task data (prompts, paper texts, etc.)
     task_data: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        d: dict[str, Any] = {
+            "id": self.id,
+            "capability_tags": self.capability_tags,
+            "ground_truth": self.ground_truth,
+            "ground_truth_source": self.ground_truth_source,
+            "scoring_method": self.scoring_method,
+            "contamination_risk": self.contamination_risk,
+            "hard_negatives": self.hard_negatives,
+            "expert_notes": self.expert_notes,
+            "version": self.version,
+            "task_data": self.task_data,
+        }
+        if self.provenance is not None:
+            d["provenance"] = self.provenance.to_dict()
+        return d
 
 
 def validate_item(item: DatasetItem) -> list[str]:
@@ -115,5 +170,19 @@ def validate_item(item: DatasetItem) -> list[str]:
             f"invalid contamination_risk: '{item.contamination_risk}'. "
             f"Valid: {sorted(VALID_CONTAMINATION_RISK)}"
         )
+
+    if item.provenance is not None:
+        if not item.provenance.source_id:
+            errors.append("provenance.source_id is required when provenance is provided")
+        if item.provenance.source_type not in VALID_SOURCE_TYPES:
+            errors.append(
+                f"invalid provenance.source_type: '{item.provenance.source_type}'. "
+                f"Valid: {sorted(VALID_SOURCE_TYPES)}"
+            )
+        if item.provenance.review_status not in VALID_REVIEW_STATUS:
+            errors.append(
+                f"invalid provenance.review_status: '{item.provenance.review_status}'. "
+                f"Valid: {sorted(VALID_REVIEW_STATUS)}"
+            )
 
     return errors
