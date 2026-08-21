@@ -69,4 +69,4 @@ jobs:
         /tmp/rb-venv/bin/python -m pip install dist/*.whl
         /tmp/rb-venv/bin/researchbench --version
         /tmp/rb-venv/bin/researchbench list
-        /tmp/rb-venv/bin/researchbench run --tasks paper_comprehension --model gpt-4o --format json
+        /tmp/rb-venv/bin/researchbench run --tasks paper_comprehension --model gpt-4o --allow-draft --format json
