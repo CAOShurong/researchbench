@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+from typing import Any
 
 import click
 
@@ -275,6 +276,18 @@ def _show_dry_run(task_list: list[str]) -> None:
 @click.option(
     "--quiet", is_flag=True, default=False, help="Suppress the report banner (text output only)."
 )
+@click.option(
+    "--parallel",
+    is_flag=True,
+    default=False,
+    help="Run tasks concurrently (faster for real models).",
+)
+@click.option(
+    "--save-responses",
+    "save_responses_dir",
+    default=None,
+    help="Directory to save raw model responses (one file per task).",
+)
 def run(
     tasks: str,
     ignore: str,
@@ -285,25 +298,66 @@ def run(
     dry_run: bool,
     benchmark: bool,
     quiet: bool,
+    parallel: bool,
+    save_responses_dir: str | None,
 ) -> None:
     """Run the benchmark against a single model."""
     task_list = _resolve_tasks(tasks, ignore=ignore)
     if dry_run:
         _show_dry_run(task_list)
         return
+    import concurrent.futures
     import time
+    from pathlib import Path
 
     from researchbench.core import TaskResult
 
     bench = Benchmark(tasks=task_list)
+
+    # Optionally wrap each task module's _call_model to save responses.
+    if save_responses_dir:
+        import importlib as _il
+
+        save_dir = Path(save_responses_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        for name in bench.tasks:
+            mod = _il.import_module(f"researchbench.tasks.{name}")
+            original = mod._call_model
+
+            def _make_wrapped(n: str, orig):
+                def wrapped(m, p):
+                    resp = orig(m, p)
+                    (save_dir / f"{n}.txt").write_text(resp, encoding="utf-8")
+                    return resp
+
+                return wrapped
+
+            mod._call_model = _make_wrapped(name, original)
+
     result = BenchmarkResult(model=model)
-    for name, task in bench.tasks.items():
+
+    def _eval_one(name_task: tuple[str, Any]) -> tuple[str, float, dict, float]:
+        n, t = name_task
         t0 = time.perf_counter()
-        score, details = task.evaluate(model=model)
+        sc, det = t.evaluate(model=model)
         elapsed = time.perf_counter() - t0
-        result.results.append(TaskResult(task_name=name, model=model, score=score, details=details))
-        if benchmark:
-            click.echo(f"  [{name}] {elapsed:.3f}s", err=True)
+        return n, sc, det, elapsed
+
+    if parallel:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(bench.tasks)) as pool:
+            futures = {pool.submit(_eval_one, (n, t)): n for n, t in bench.tasks.items()}
+            for future in concurrent.futures.as_completed(futures):
+                n, sc, det, elapsed = future.result()
+                result.results.append(TaskResult(task_name=n, model=model, score=sc, details=det))
+                if benchmark:
+                    click.echo(f"  [{n}] {elapsed:.3f}s", err=True)
+    else:
+        for name, task in bench.tasks.items():
+            n, sc, det, elapsed = _eval_one((name, task))
+            result.results.append(TaskResult(task_name=n, model=model, score=sc, details=det))
+            if benchmark:
+                click.echo(f"  [{n}] {elapsed:.3f}s", err=True)
+
     _emit(result.to_format(fmt, verbose=verbose, quiet=quiet), fmt, save_path)
 
 

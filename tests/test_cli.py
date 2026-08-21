@@ -279,6 +279,41 @@ class TestRunCommand:
         assert "ResearchBench" not in quiet.output
         assert "AVERAGE" in quiet.output  # score still shown
 
+    def test_run_parallel(self, runner):
+        result = runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension,idea_generation",
+                "--model",
+                "gpt-4o",
+                "--parallel",
+            ],
+        )
+        assert result.exit_code == 0
+        assert "AVERAGE" in result.output
+
+    def test_run_save_responses(self, runner, tmp_path):
+        resp_dir = tmp_path / "responses"
+        result = runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "paper_comprehension",
+                "--model",
+                "gpt-4o",
+                "--save-responses",
+                str(resp_dir),
+            ],
+        )
+        assert result.exit_code == 0
+        assert resp_dir.exists()
+        files = list(resp_dir.iterdir())
+        assert len(files) > 0
+        assert files[0].read_text(encoding="utf-8").strip() != ""
+
 
 class TestCompareCommand:
     def test_compare_text_table(self, runner):
