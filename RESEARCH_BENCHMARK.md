@@ -336,7 +336,10 @@ For every major design decision, explicitly ask **before** deciding:
 
 ### What is fundamentally weak
 
-1. **All 7 tasks use keyword substring matching as their sole scoring method.**
+1. **All 7 tasks use keyword substring matching
+   as their sole scoring method.** This is a placeholder. Paper_comprehension
+   now uses a validated DatasetItem with provenance, but the scorer is still
+   keyword matching. The other 6 tasks use legacy data without DatasetItem. as their sole scoring method.**
    This is a placeholder, not a scientifically valid evaluation. It cannot:
    - distinguish a correct answer from a plausible-sounding one;
    - detect hallucinations or unsupported claims;
@@ -347,10 +350,16 @@ For every major design decision, explicitly ask **before** deciding:
    `key_causes` are answer keys for keyword matching, not research-grade
    ground truth.
 
-3. **No reproducibility metadata.** Run records contain only the model name.
-   No timestamp, no model settings, no raw outputs, no cited sources.
+3. **Reproducibility metadata is partially implemented.** Run records now
+   capture timestamp, benchmark_version, run_config, raw_output,
+   duration_seconds, and evaluator_version. Subscription/API RunRecords
+   support import/validate/export via CLI. But these are not yet connected
+   to real model evaluation (only mock mode has been tested).
 
-4. **No subscription-model protocol.** Only API calls are supported.
+4. **Subscription/API protocol is implemented but not execution-integrated.**
+   SubscriptionRun, APIRun, and RunRecord dataclasses exist with CLI
+   import/validate/export. But no model evaluation has been run through
+   these records ? only canned test data.
 
 5. **No contamination prevention.** All papers are well-known classics likely
    in training data.

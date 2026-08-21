@@ -156,3 +156,12 @@ The `researchbench` package also exposes a `click`-based CLI through
 `researchbench.cli:main`. This is the entry point for both the `researchbench`
 console script and `python -m researchbench`. See [`docs/USAGE.md`](USAGE.md)
 for the command-line reference.
+
+## RunRecord contract (RESEARCH_BENCHMARK.md ?6-7)
+
+The `run-record` CLI command supports:
+- `import --from <file>`: validate and load a RunRecord
+- `validate --from <file>`: check mandatory fields
+- `export --from <file> --save <out>`: validate and re-export
+
+Subscription and API runs are separate conditions (cannot mix in one record).
