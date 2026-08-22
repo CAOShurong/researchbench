@@ -57,7 +57,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 | `src/researchbench/tasks/` | 7 task modules (PaperComprehension, IdeaGeneration, etc.) | TASK_DEFINITIONS.md + code |
 | `src/researchbench/core.py` | Benchmark runner, BenchmarkResult, TaskResult | The code |
 | `src/researchbench/cli.py` | Click-based CLI (10 commands) | The code |
-| `tests/` | 162 tests (task scoring, CLI, core, report rendering) | test files |
+| `tests/` | 260 tests (task scoring, CLI, core, report rendering) | test files |
 | `docs/` | Documentation (8 files) | docs/ |
 | `examples/` | Runnable demos | examples/ |
 | `.github/workflows/ci.yml` | CI: test matrix, typecheck, build | ci.yml |
@@ -67,7 +67,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 | Purpose | Command or method | Expected result |
 |---|---|---|
-| Full test suite | `pytest tests -v` | 162 passed |
+| Full test suite | `pytest tests -v` | 260 passed |
 | With coverage gate | `pytest tests --cov=researchbench --cov-fail-under=80` | 88%+ coverage |
 | Lint | `ruff check src tests` | All checks passed |
 | Format | `ruff format --check src tests` | 22 files already formatted |
@@ -103,7 +103,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 ## Definition of done
 
-- All 162 tests pass (`pytest tests -v`).
+- All 260 tests pass (`pytest tests -v`).
 - `ruff check` and `ruff format --check` pass.
 - `mypy src` passes.
 - Wheel builds and installs in a clean venv.

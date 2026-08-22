@@ -327,7 +327,7 @@ For every major design decision, explicitly ask **before** deciding:
 - **7 task modules** with a `evaluate(model) -> (score, details)` interface.
 - **10 CLI commands**: `list`, `show`, `run`, `compare`, `tasks`, `sample`,
   `data`, `report`, `schema`, `verify`.
-- **162 tests** (88% coverage) — but the tests verify the **keyword-matching
+- **260 tests** (88% coverage) — but the tests verify the **keyword-matching
   mechanics**, not scientific validity.
 - **CI**: ruff + mypy + pytest with 80% coverage gate + wheel build smoke test.
 - **Packaging**: clean (click-only runtime dep, py.typed, SPDX license).
