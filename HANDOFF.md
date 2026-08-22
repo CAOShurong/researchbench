@@ -3,9 +3,9 @@ schema_version: portable-project-memory/v1
 handoff_revision: 10
 updated_at: "2026-08-22T10:00:00+08:00"
 updated_by: "agent-session"
-base_revision: git:d78a47a5f8c48202b35a9080f2958c66aff0d630
-workspace_fingerprint: sha256:b7109374dac019ebf233f2018530b675e26d1cabf932d0b99505c4bfad7d480b
-context_fingerprint: sha256:e0e7c069fa6c364f5c9b344a996fae8fd7969c6b456b5709b08eee90bd79a7d7
+base_revision: git:f7952b690ec44dd6cea191102c2565df6093d34c
+workspace_fingerprint: sha256:3bed6e4c44ab32092b96432290d55b38da3d55d3cd0ddce088b290a4deb56f93
+context_fingerprint: sha256:1febee325f20c780610c03d973052b6e2b75a04e72b252f918fb5ebd9c67078c
 status: active
 ---
 
