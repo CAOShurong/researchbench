@@ -51,7 +51,7 @@ researchbench = ["py.typed", "report-schema.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --basetemp=.pytest_tmp"
 filterwarnings = [
     "error::DeprecationWarning",
     "error::PendingDeprecationWarning",
