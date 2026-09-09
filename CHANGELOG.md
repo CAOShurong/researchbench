@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Scientific pilot for heterogeneous integration and BEOL-compatible devices
+  (`src/researchbench/tasks/heterogeneous_pilot.py`), resolving Issue #13:
+  5 domain-specific evaluation items covering thermal budget constraints,
+  a-IGZO orbital transport and DRAM leakage, HZO orthorhombic phase stabilization,
+  2D TMD transfer vs low-temperature direct growth, and fine-pitch Cu-Cu hybrid bonding.
+- Evidence-based rubric evaluator (`src/researchbench/rubric.py`):
+  structured criteria weighting, required evidence pattern matching, hard-negative
+  penalty subtraction, and per-criterion audit breakdown.
+- Blinded human calibration pack export (`export_blinded_calibration_pack`)
+  supporting inter-annotator agreement studies without evaluator bias.
+- Unit test suite for rubric scoring, schema validation, and pilot execution
+  (`tests/test_heterogeneous_pilot.py`), bringing the test suite to 270 passing tests.
+
 ## [0.1.0] - 2026-08-20
 
 ### Added

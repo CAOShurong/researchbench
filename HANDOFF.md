@@ -1,11 +1,9 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 10
-updated_at: "2026-08-22T10:00:00+08:00"
+handoff_revision: 11
+updated_at: "2026-09-09T22:45:00+08:00"
 updated_by: "agent-session"
-base_revision: git:f7952b690ec44dd6cea191102c2565df6093d34c
-workspace_fingerprint: sha256:3bed6e4c44ab32092b96432290d55b38da3d55d3cd0ddce088b290a4deb56f93
-context_fingerprint: sha256:1febee325f20c780610c03d973052b6e2b75a04e72b252f918fb5ebd9c67078c
+base_revision: git:d78a47a5f8c48202b35a9080f2958c66aff0d630
 status: active
 ---
 
@@ -79,16 +77,23 @@ do we know?*
 - `D-20260821-110000-rb006`: reposition as prototype, disclose name collision.
 - Parent program `D-20260820-030000-c018` authorized creating this project.
 
+## Phase 4 scientific pilot implemented (Issue #13)
+
+- **Pilot dataset**: 5 domain-specific items for heterogeneous integration & BEOL-compatible
+  materials/devices (`src/researchbench/tasks/heterogeneous_pilot.py`). Provenance, hard negatives,
+  contamination risk, and structured rubrics verified.
+- **Rubric evaluator**: Evidence-based criteria scoring with required patterns and negative indicator
+  penalties (`src/researchbench/rubric.py`).
+- **Human calibration pack**: `export_blinded_calibration_pack` with anonymized model IDs and randomized
+  variant ordering for bias-free expert calibration.
+- **Verification**: 270 unit tests passing cleanly; `ruff check`, `ruff format`, and `mypy` passing.
+
 ## Next actions
 
-1. Build a small scientifically defensible pilot for heterogeneous integration /
-   BEOL materials/devices (CAOShurong's PhD domain). 4-6 items across paper
-   comprehension + claim verification / peer review.
-2. Replace keyword matching with evidence-based rubric evaluator for pilot items.
-3. Add blinded output, per-criterion audit scores, human calibration pack.
-4. Research existing benchmarks and name collision; propose 3 non-conflicting names.
-5. Do not publish a leaderboard or model capability conclusions.
-6. Do not release a new version until scientific pilot is validated.
+1. Human calibration study: recruit domain reviewers using blinded calibration pack.
+2. Research existing benchmarks and name collision; propose 3 non-conflicting names.
+3. Do not publish a leaderboard or model capability conclusions.
+4. Do not release a new version until scientific pilot is validated.
 
 ## Coordination boundary
 

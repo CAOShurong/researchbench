@@ -1,4 +1,5 @@
 from researchbench.tasks.experimental_design import ExperimentalDesign
+from researchbench.tasks.heterogeneous_pilot import PILOT_DATASET, HeterogeneousPilot
 from researchbench.tasks.idea_generation import IdeaGeneration
 from researchbench.tasks.literature_synthesis import LiteratureSynthesis
 from researchbench.tasks.open_question_id import OpenQuestionId
@@ -7,7 +8,9 @@ from researchbench.tasks.peer_review import PeerReview
 from researchbench.tasks.reproduction import Reproduction
 
 __all__ = [
+    "PILOT_DATASET",
     "ExperimentalDesign",
+    "HeterogeneousPilot",
     "IdeaGeneration",
     "LiteratureSynthesis",
     "OpenQuestionId",
