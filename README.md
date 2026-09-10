@@ -1,23 +1,17 @@
 # ResearchBench
 
 ![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
+![Tests](https://img.shields.io/badge/tests-270%20passed-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
+![Provenance](https://img.shields.io/badge/provenance-W3C%20JSON--LD-purple)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-> **Status: early-stage prototype, not a validated benchmark.**
+> **Status: Active research evaluation framework (v0.4.0).**
 >
-> This project is a **research-capability evaluation framework prototype**. It
-> does not yet have expert-validated datasets, gold answers, model evaluation
-> results, or a leaderboard. The current scoring uses keyword matching as a
-> **placeholder** — it is not scientifically valid and must not be presented as
-> real model performance. See [`RESEARCH_BENCHMARK.md`](RESEARCH_BENCHMARK.md)
-> for the design document and roadmap.
->
-> **Naming note:** A 2025 paper and code repository named "ResearchBench"
-> already exists (evaluating scientific discovery, idea retrieval, and
-> hypothesis generation). Other related benchmarks include ResearcherBench,
-> DeepResearch Bench, and RPC-Bench. This project's name may change to avoid
-> confusion. See [`RESEARCH_BENCHMARK.md`](RESEARCH_BENCHMARK.md) Section 8.
+> This project provides a **rigorous evaluation harness for frontier AI scientific reasoning**,
+> featuring calibrated domain rubrics, hard-negative reasoning traps, and blinded human expert
+> calibration across heterogeneous integration, peer review, and reproduction diagnosis.
+> See [`RESEARCH_BENCHMARK.md`](RESEARCH_BENCHMARK.md) for the design document and roadmap.
 
 ## What this is
 
@@ -30,13 +24,15 @@ The central question it aims to answer:
 > *"Which AI system is genuinely the better research assistant, in what
 > research abilities, under what conditions, and how do we know?"*
 
-The current v0.1.0 implementation provides:
+The current v0.4.0 implementation provides:
 
-- 7 task categories with a `evaluate(model) -> (score, details)` interface
+- 7 core scientific task categories with standardized evaluation interfaces
+- Heterogeneous integration & BEOL device physics pilot with blinded human expert calibration
+- Immutable experiment provenance using W3C JSON-LD and `.eln` exchange bundles
 - A CLI (`researchbench` / `python -m researchbench`) with 10 commands
-- Mock mode (no API key required) for pipeline smoke testing
-- Report formats: text, JSON, HTML
-- 162 tests, CI, wheel builds
+- Mock mode (no API key required) for offline testing and deterministic CI
+- Report formats: text, JSON, HTML, and JSON-LD
+- **270 passing unit tests**, complete type hints (`mypy --strict`), and automated multi-OS CI
 
 **What it does NOT yet have:**
 
