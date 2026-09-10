@@ -1,7 +1,7 @@
 # ResearchBench
 
 ![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-270%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-277%20passed-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
 ![Provenance](https://img.shields.io/badge/provenance-W3C%20JSON--LD-purple)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
@@ -24,23 +24,22 @@ The central question it aims to answer:
 > *"Which AI system is genuinely the better research assistant, in what
 > research abilities, under what conditions, and how do we know?"*
 
-The current v0.4.0 implementation provides:
+The current prototype provides:
 
-- 7 core scientific task categories with standardized evaluation interfaces
-- Heterogeneous integration & BEOL device physics pilot with blinded human expert calibration
-- Immutable experiment provenance using W3C JSON-LD and `.eln` exchange bundles
-- A CLI (`researchbench` / `python -m researchbench`) with 10 commands
+- 7 keyword-matching placeholder task categories (not scientifically valid scores)
+- An 8th task, `heterogeneous_pilot`: BEOL / heterogeneous-integration items with
+  rubric scoring. Five items are marked reviewed; later items may be `draft`
+  (skipped unless `--allow-draft`)
+- A CLI (`researchbench` / `python -m researchbench`)
 - Mock mode (no API key required) for offline testing and deterministic CI
-- Report formats: text, JSON, HTML, and JSON-LD
-- **270 passing unit tests**, complete type hints (`mypy --strict`), and automated multi-OS CI
+- Report formats: text, JSON, HTML
+- **277 passing unit tests** and multi-OS CI
 
 **What it does NOT yet have:**
 
-- Expert-validated datasets or gold answers
-- Evidence-based scoring (the current keyword matching is a placeholder)
-- Subscription-model evaluation protocol (ChatGPT/Claude/Codex)
-- Reproducibility metadata (timestamps, model settings, raw outputs)
-- Contamination prevention (all papers are well-known classics)
+- Expert-validated datasets or gold answers (q6 is a 2026-paper draft)
+- Evidence-based scoring on the original seven tasks (keyword matching is a placeholder)
+- A public name that does not collide with Liu et al. ResearchBench (ACL 2026 Findings)
 - Any published model evaluation results or leaderboard
 
 ## Installation
@@ -65,9 +64,10 @@ print(result.summary())
 CLI:
 
 ```bash
-researchbench run --tasks paper_comprehension,idea_generation --model gpt-4o
-researchbench run --tasks all --model gpt-4o --format json --save report.json
-researchbench compare --model gpt-4o --model claude-3-opus --tasks all
+researchbench run --tasks paper_comprehension,idea_generation --model gpt-4o --allow-draft
+researchbench run --tasks heterogeneous_pilot --model gpt-4o
+researchbench run --tasks all --model gpt-4o --allow-draft --format json --save report.json
+researchbench compare --model gpt-4o --model claude-3-opus --tasks all --allow-draft
 ```
 
 > Without an API key, tasks run in **mock mode** and return canned scores for

@@ -20,8 +20,8 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 ## Deliverables
 
-- A pip-installable Python package (`researchbench`) with 7 task modules,
-  deterministic keyword-based scoring, and a CLI.
+- A pip-installable Python package (`researchbench`) with 7 keyword-matching
+  placeholder tasks plus `heterogeneous_pilot` (rubric), and a CLI.
 - 160+ tests with 88% coverage, CI (ruff, mypy, pytest with coverage gate,
   wheel build + clean-install smoke test).
 - Full documentation: task definitions, usage guide, contributing guide, API
@@ -54,7 +54,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 | Path or component | Purpose | Source of truth |
 |---|---|---|
 | `src/researchbench/` | Package source | The code |
-| `src/researchbench/tasks/` | 7 task modules (PaperComprehension, IdeaGeneration, etc.) | TASK_DEFINITIONS.md + code |
+| `src/researchbench/tasks/` | 8 task modules (7 placeholders + HeterogeneousPilot) | TASK_DEFINITIONS.md + code |
 | `src/researchbench/core.py` | Benchmark runner, BenchmarkResult, TaskResult | The code |
 | `src/researchbench/cli.py` | Click-based CLI (10 commands) | The code |
 | `tests/` | 260 tests (task scoring, CLI, core, report rendering) | test files |
@@ -75,7 +75,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 | Pre-commit | `pre-commit run --all-files` | All hooks passed |
 | Build wheel | `python -m build` | sdist + wheel created |
 | Install + smoke | `pip install dist/*.whl && researchbench --version` | version 0.1.0 |
-| CLI list | `researchbench list` | 7 tasks listed |
+| CLI list | `researchbench list` | 8 tasks listed |
 | Verify | `researchbench verify` | All 7 PASS |
 
 ## Constraints
@@ -84,7 +84,9 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 - Only `click` is a runtime dependency; `openai` and `anthropic` are optional.
 - No fabricated data or evaluation results. Mock mode must be clearly labeled.
 - All work is in `E:\Codex\Projects\caoshurong\researchbench`.
-- No pushing to GitHub until the user explicitly requests it.
+- Pushing to GitHub is allowed (user 2026-09-10: 全部允许). Keep the
+  private repository private. Do not open it or rename it without a later
+  explicit request.
 - The CAOShurong GitHub Sources program memory files
   (`E:\Codex\Projects\caoshurong\github-sources-program\`) must not be modified.
 

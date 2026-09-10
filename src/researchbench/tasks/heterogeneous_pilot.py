@@ -557,13 +557,17 @@ PILOT_DATASET: list[DatasetItem] = [
             reviewer_role="",
             review_status="draft",
             review_notes=(
-                "Draft item grounded in the arXiv abstract of Cheng et al. 2026. "
+                "Draft item grounded in Cheng et al. 2026 (abstract plus PDF text). "
                 "Not expert-reviewed; do not treat as a validated benchmark item."
             ),
         ),
         expert_notes=(
-            "Facts are taken from the 24 Mar 2026 arXiv abstract only. A domain expert "
-            "must confirm numbers against the full paper before review_status can change."
+            "Numbers from the 24 Mar 2026 paper: 400 C BEOL budget; amorphous "
+            "In2O3-SiO2 (InO-SiO) cap; InO extrinsic saturation mobility 33.1 cm^2/V.s; "
+            "5 mV Vt shift after PBS at 3 MV/cm for 1000 s, better than SiO2-only "
+            "encapsulation; IGZO variant with extra oxide on the channel reports "
+            "22 cm^2/V.s and ~15 mV PBS shift. Still draft until a domain expert "
+            "checks the figures against the full PDF."
         ),
         hard_negatives=[
             {

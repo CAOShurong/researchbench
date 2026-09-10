@@ -19,3 +19,5 @@ comparison.html
 .DS_Store
 *.log
 node_modules/
+.ai/agent.lock
+.ai/agent.lock.tmp

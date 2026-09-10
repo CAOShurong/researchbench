@@ -1,8 +1,9 @@
 # Usage Guide
 
 ResearchBench evaluates an AI model's academic and research capabilities across
-7 task categories. This guide covers the CLI, the Python API, report formats,
-and how to evaluate a real model.
+8 tasks (7 keyword-matching placeholders plus the BEOL `heterogeneous_pilot`).
+This guide covers the CLI, the Python API, report formats, and how to evaluate
+a real model. Scores are not a validated benchmark.
 
 ## Installation
 
@@ -23,8 +24,9 @@ models you also need `openai` and/or `anthropic` (see
 ## Quick start
 
 ```bash
-researchbench list                          # list the 7 tasks
-researchbench run --model gpt-4o            # all tasks, text report to stdout
+researchbench list                          # list the 8 tasks
+researchbench run --tasks heterogeneous_pilot --model gpt-4o
+researchbench run --model gpt-4o --allow-draft   # include draft items
 researchbench run --tasks idea_generation,peer_review --model claude-3-opus
 researchbench compare --model gpt-4o --model claude-3-opus --tasks all
 ```
@@ -94,7 +96,7 @@ html` renders the same as a table page. `--format json` emits
 ```python
 from researchbench import Benchmark
 
-bench = Benchmark()                         # all 7 tasks
+bench = Benchmark()                         # all 8 tasks
 subset = Benchmark(tasks=["paper_comprehension", "reproduction"])
 
 result = bench.run(model="gpt-4o")          # single model

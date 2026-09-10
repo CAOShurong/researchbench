@@ -221,6 +221,32 @@ Do not rename the package (user decision; see `docs/NAME_CANDIDATES.md`).
 - Tests: 275 passed.
 - Human calibration and a public rename remain user/expert work.
 
+## D-20260910-200000-rb016
+
+### Push is allowed; overlapping agents skip
+- Status: accepted
+- Date: 2026-09-10
+- Deciders: user (全部允许, 5 min loop, skip if busy)
+- Supersedes: PROJECT_CONTEXT "no pushing until the user explicitly requests it"
+
+### Context
+
+The user authorized continuing work without waiting, denser looping (5 min),
+pushing the private repo, and robustness when a loop fires during an
+in-progress session.
+
+### Decision
+
+- `git push origin master` is allowed. Keep the repository private.
+- Do not rename the package or GitHub repo.
+- Agents must acquire `.ai/agent_lock.py` first. BUSY => no edits.
+- Stale locks (>12 min without heartbeat) may be stolen.
+
+### Consequences
+
+- Continuation loops must not clobber an interactive session.
+- Push remains origin/master only; no force-push unless the user says so.
+
 ## D-20260910-180000-rb015
 
 ### Mixed reviewed+draft datasets skip drafts unless `--allow-draft`
