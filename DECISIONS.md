@@ -247,6 +247,32 @@ in-progress session.
 - Continuation loops must not clobber an interactive session.
 - Push remains origin/master only; no force-push unless the user says so.
 
+## D-20260910-203000-rb017
+
+### No human follow-up; agent-complete work only
+- Status: accepted
+- Date: 2026-09-10
+- Deciders: user (explicit: will not review, will not approve again)
+- Supersedes: any HANDOFF "user decisions required" that blocked progress
+
+### Context
+
+Asking the user to read full papers, calibrate items, pick a public name, or
+approve a push creates homework they will not do. That work is wasted.
+
+### Decision
+
+- Do not add dataset items whose next step is expert review.
+- Existing draft items stay `draft` forever and stay labeled.
+- Keep the GitHub/Python name `researchbench`; do not rename.
+- Do not ask the user to approve, review, or calibrate.
+- Only start changes that this agent can finish: tests, commit, and push.
+
+### Consequences
+
+- Scientific validity will not be claimed; the prototype stays a prototype.
+- Continuation loops must not invent human queues.
+
 ## D-20260910-180000-rb015
 
 ### Mixed reviewed+draft datasets skip drafts unless `--allow-draft`

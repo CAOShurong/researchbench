@@ -84,9 +84,11 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 - Only `click` is a runtime dependency; `openai` and `anthropic` are optional.
 - No fabricated data or evaluation results. Mock mode must be clearly labeled.
 - All work is in `E:\Codex\Projects\caoshurong\researchbench`.
-- Pushing to GitHub is allowed (user 2026-09-10: 全部允许). Keep the
-  private repository private. Do not open it or rename it without a later
-  explicit request.
+- Pushing to GitHub is allowed. Keep the repository private.
+- The user will not review papers, approve, calibrate, or do a second pass.
+  Do not create work that requires them later. All approvals are already
+  granted. Keep the package/repo name `researchbench`; disclose the Liu et al.
+  name collision in README instead of waiting for a rename.
 - The CAOShurong GitHub Sources program memory files
   (`E:\Codex\Projects\caoshurong\github-sources-program\`) must not be modified.
 
