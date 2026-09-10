@@ -1,55 +1,46 @@
 # ResearchBench
 
+**Run a BEOL / heterogeneous-integration quiz on any chat model, in your terminal, with no API key.**
+
 ![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-281%20passed-brightgreen)
-![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
-![Provenance](https://img.shields.io/badge/provenance-W3C%20JSON--LD-purple)
+![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-> **Status: evaluation-framework prototype (v0.4.1).** Not a validated benchmark.
->
-> CLI and mock-mode harness for research-capability tasks. Seven tasks still use
-> keyword-matching placeholders. `heterogeneous_pilot` uses a coded rubric with
-> hard-negative penalties; items are not expert-calibrated. Name collides with
-> Liu et al. ResearchBench (ACL 2026 Findings) — this repo is unrelated.
-> See [`RESEARCH_BENCHMARK.md`](RESEARCH_BENCHMARK.md) for the design document.
+```bash
+pip install "git+https://github.com/CAOShurong/researchbench.git@v0.4.1"
+researchbench run --tasks heterogeneous_pilot --model gpt-4o
+```
 
-## What this is
+No key → mock mode (smoke test). With a key → real answers, scored by a coded
+rubric (thermal budget, IGZO, HZO, 2D transfer vs growth, Cu–Cu hybrid bonding).
+Wrong-but-fluent answers that trip hard negatives lose points.
 
-A framework for evaluating **AI as a research assistant** — paper
-comprehension, idea generation, literature synthesis, experimental design,
-peer review, reproduction diagnosis, and open question identification.
+> Unrelated to Liu et al. *ResearchBench* (ACL 2026 Findings). This repo is an
+> **evaluation-framework prototype**, not a validated leaderboard.
 
-The central question it aims to answer:
+## What you can inspect
 
-> *"Which AI system is genuinely the better research assistant, in what
-> research abilities, under what conditions, and how do we know?"*
+| You run | You get |
+|---|---|
+| `researchbench run --tasks heterogeneous_pilot` | Rubric scores + per-criterion evidence for 5 BEOL items |
+| `researchbench run --tasks heterogeneous_pilot --allow-draft` | Also includes draft item q6 (2026 paper, not expert-reviewed) |
+| `researchbench list` | 8 tasks. Seven are keyword-matching **placeholders** and must not be quoted as model quality. |
 
-The current prototype provides:
+The question this harness is built to answer later:
 
-- 7 keyword-matching placeholder task categories (not scientifically valid scores)
-- An 8th task, `heterogeneous_pilot`: BEOL / heterogeneous-integration items with
-  rubric scoring. Five items are marked reviewed; later items may be `draft`
-  (skipped unless `--allow-draft`)
-- A CLI (`researchbench` / `python -m researchbench`)
-- Mock mode (no API key required) for offline testing and deterministic CI
-- Report formats: text, JSON, HTML
-- **281 passing unit tests** and multi-OS CI
+> Which AI is the better *research assistant* for electronic-engineering work,
+> under what conditions, and how do we know?
 
-**What it does NOT yet have:**
-
-- Expert-validated datasets or gold answers (q6 is a 2026-paper draft)
-- Evidence-based scoring on the original seven tasks (keyword matching is a placeholder)
-- A public name that does not collide with Liu et al. ResearchBench (ACL 2026 Findings)
-- Any published model evaluation results or leaderboard
+It does **not** answer that yet. Do not cite current numbers as a ranking.
 
 ## Installation
 
 ```bash
-pip install -e .
+pip install "git+https://github.com/CAOShurong/researchbench.git@v0.4.1"
 
-# To call real models (openai/anthropic clients):
-pip install -e ".[judge]"
+# Local checkout:
+pip install -e ".[judge]"   # optional OpenAI / Anthropic clients
 ```
 
 ## Quick Start
@@ -57,7 +48,7 @@ pip install -e ".[judge]"
 ```python
 from researchbench import Benchmark
 
-bench = Benchmark(tasks=["paper_comprehension", "idea_generation"])
+bench = Benchmark(tasks=["heterogeneous_pilot"])
 result = bench.run(model="gpt-4o")
 print(result.summary())
 ```
