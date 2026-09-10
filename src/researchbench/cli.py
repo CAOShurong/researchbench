@@ -11,6 +11,7 @@ from researchbench import Benchmark
 from researchbench.core import BenchmarkResult
 from researchbench.tasks import (
     ExperimentalDesign,
+    HeterogeneousPilot,
     IdeaGeneration,
     LiteratureSynthesis,
     OpenQuestionId,
@@ -49,6 +50,11 @@ TASK_INFO = {
         "class": OpenQuestionId,
         "desc": "Test ability to identify important open research questions.",
     },
+    "heterogeneous_pilot": {
+        "class": HeterogeneousPilot,
+        "desc": "Evidence-based BEOL / heterogeneous-integration scientific pilot "
+        "(rubric scoring, not keyword matching).",
+    },
 }
 
 FORMATS = ["text", "json", "html"]
@@ -64,6 +70,7 @@ _TASK_SAMPLE_PATH: dict[str, tuple[str | int, ...]] = {
     "peer_review": ("MOCK_SUBMISSIONS", "question"),
     "reproduction": ("SCENARIOS", "question"),
     "open_question_id": ("PAPER_SETS", "question"),
+    "heterogeneous_pilot": ("DATASET", "question"),
 }
 
 
@@ -472,7 +479,10 @@ def verify() -> None:
         click.echo(f"  [{status}] {r.task_name:25s} {r.score:.2f}")
     click.echo("=" * 50)
     if all_ok:
-        click.echo("All 7 tasks passed mock-mode verification. Installation is working.")
+        click.echo(
+            f"All {len(result.results)} tasks passed mock-mode verification. "
+            "Installation is working."
+        )
     else:
         raise SystemExit(1)
 
@@ -503,7 +513,11 @@ def data(task_name: str, fmt: str, save_path: str | None, validate: bool) -> Non
         from researchbench.dataset_schema import validate_item
 
         mod = _il.import_module(f"researchbench.tasks.{task_name}")
-        pilot_items = getattr(mod, "PILOT_ITEMS", None)
+        pilot_items = (
+            getattr(mod, "DATASET", None)
+            or getattr(mod, "PILOT_ITEMS", None)
+            or getattr(mod, "PILOT_DATASET", None)
+        )
         if pilot_items is not None:
             all_errors: list[str] = []
             for item in pilot_items:
@@ -527,8 +541,12 @@ def data(task_name: str, fmt: str, save_path: str | None, validate: bool) -> Non
         import json
 
         mod = _il2.import_module(f"researchbench.tasks.{task_name}")
-        pilot_items = getattr(mod, "PILOT_ITEMS", None)
-        if pilot_items is not None:
+        pilot_items = (
+            getattr(mod, "DATASET", None)
+            or getattr(mod, "PILOT_ITEMS", None)
+            or getattr(mod, "PILOT_DATASET", None)
+        )
+        if pilot_items and hasattr(pilot_items[0], "to_dict"):
             _emit(
                 json.dumps([item.to_dict() for item in pilot_items], indent=2, default=str),
                 fmt,

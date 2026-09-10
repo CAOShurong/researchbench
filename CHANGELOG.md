@@ -20,7 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Blinded human calibration pack export (`export_blinded_calibration_pack`)
   supporting inter-annotator agreement studies without evaluator bias.
 - Unit test suite for rubric scoring, schema validation, and pilot execution
-  (`tests/test_heterogeneous_pilot.py`), bringing the test suite to 270 passing tests.
+  (`tests/test_heterogeneous_pilot.py`).
+- Wired `heterogeneous_pilot` into `Benchmark`, `available_tasks()`, and the
+  CLI (`list` / `run` / `sample` / `data` / `verify`). Dataset aliases
+  `DATASET` and `PILOT_ITEMS` point at the same five items. Run records for
+  this task use `evaluator_version=rubric-v0.1`.
+- `docs/BENCHMARK_COMPARISON.md` completes RESEARCH_BENCHMARK.md §8 against
+  Liu ResearchBench, ResearcherBench, DeepResearch Bench, RPC-Bench, and
+  related suites. `docs/NAME_CANDIDATES.md` lists three rename options.
 
 ## [0.1.0] - 2026-08-20
 

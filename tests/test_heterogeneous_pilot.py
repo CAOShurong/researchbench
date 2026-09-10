@@ -7,6 +7,8 @@ Covers:
 - Blinded human calibration pack export.
 """
 
+import json
+
 from researchbench.dataset_schema import is_runnable, validate_item
 from researchbench.rubric import (
     Criterion,
@@ -134,3 +136,57 @@ class TestBlindedCalibrationPack:
             assert "model" not in var
             assert var["variant_label"] in ["A", "B"]
             assert var["blinded_id"].startswith("BLIND-")
+
+
+class TestPilotCLIWiring:
+    """The scientific pilot must be reachable from Benchmark and the CLI."""
+
+    def test_aliases_match_authoritative_collection(self):
+        from researchbench.tasks.heterogeneous_pilot import DATASET, PILOT_ITEMS
+
+        assert DATASET is PILOT_DATASET
+        assert PILOT_ITEMS is PILOT_DATASET
+
+    def test_benchmark_registers_pilot(self):
+        from researchbench import Benchmark
+
+        assert "heterogeneous_pilot" in Benchmark.available_tasks()
+        bench = Benchmark(tasks=["heterogeneous_pilot"])
+        result = bench.run(model="gpt-4o")
+        assert len(result.results) == 1
+        assert result.results[0].task_name == "heterogeneous_pilot"
+        assert result.results[0].evaluator_version == "rubric-v0.1"
+        assert 0.0 <= result.results[0].score <= 100.0
+
+    def test_cli_run_without_allow_draft(self):
+        from click.testing import CliRunner
+
+        from researchbench.cli import main
+
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "heterogeneous_pilot",
+                "--model",
+                "gpt-4o",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        data = json.loads(result.output)
+        assert data["results"][0]["task"] == "heterogeneous_pilot"
+        assert data["results"][0]["evaluator_version"] == "rubric-v0.1"
+
+    def test_cli_data_validate(self):
+        from click.testing import CliRunner
+
+        from researchbench.cli import main
+
+        runner = CliRunner()
+        result = runner.invoke(main, ["data", "heterogeneous_pilot", "--validate"])
+        assert result.exit_code == 0, result.output
+        assert "5 pilot item(s) OK" in result.output

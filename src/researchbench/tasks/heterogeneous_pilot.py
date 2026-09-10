@@ -484,6 +484,11 @@ PILOT_DATASET: list[DatasetItem] = [
     ),
 ]
 
+# Aliases so Benchmark validation and the CLI data/sample commands find the
+# same collection as paper_comprehension (DATASET / PILOT_ITEMS).
+DATASET = PILOT_DATASET
+PILOT_ITEMS = PILOT_DATASET
+
 
 class HeterogeneousPilot:
     """Evaluates domain-specific reasoning in heterogeneous integration & BEOL devices."""

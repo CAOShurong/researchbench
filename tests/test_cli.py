@@ -40,6 +40,7 @@ class TestListCommand:
             "peer_review",
             "reproduction",
             "open_question_id",
+            "heterogeneous_pilot",
         ]:
             assert name in result.output
 
@@ -78,8 +79,9 @@ class TestTasksCommand:
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert isinstance(data, list)
-        assert len(data) == 7
+        assert len(data) == 8
         assert data[0]["name"] == "paper_comprehension"
+        assert data[-1]["name"] == "heterogeneous_pilot"
         assert "dataset_size" in data[0]
         assert data[0]["dataset_size"] > 0
 
@@ -88,7 +90,7 @@ class TestTasksCommand:
         result = runner.invoke(main, ["tasks", "--format", "json", "--save", str(out)])
         assert result.exit_code == 0
         data = json.loads(out.read_text(encoding="utf-8"))
-        assert len(data) == 7
+        assert len(data) == 8
 
 
 class TestSampleCommand:
@@ -120,6 +122,7 @@ class TestSampleCommand:
             "peer_review",
             "reproduction",
             "open_question_id",
+            "heterogeneous_pilot",
         ],
     )
     def test_sample_all_tasks_non_empty(self, runner, task_name):
@@ -612,7 +615,7 @@ class TestVerifyCommand:
         assert result.exit_code == 0
         assert "Verification" in result.output
         assert "PASS" in result.output
-        assert "All 7 tasks" in result.output
+        assert "All 8 tasks" in result.output
 
 
 class TestDataCommand:

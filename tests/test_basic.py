@@ -2,6 +2,7 @@
 
 from researchbench import Benchmark
 from researchbench.tasks.experimental_design import ExperimentalDesign
+from researchbench.tasks.heterogeneous_pilot import HeterogeneousPilot
 from researchbench.tasks.idea_generation import IdeaGeneration
 from researchbench.tasks.literature_synthesis import LiteratureSynthesis
 from researchbench.tasks.open_question_id import OpenQuestionId
@@ -17,6 +18,7 @@ ALL_TASK_CLASSES = [
     PeerReview,
     Reproduction,
     OpenQuestionId,
+    HeterogeneousPilot,
 ]
 
 
@@ -47,7 +49,9 @@ class TestTaskInterface:
 class TestBenchmark:
     def test_benchmark_creates_tasks(self):
         bench = Benchmark()
-        assert len(bench.tasks) == 7, "Should have all 7 tasks"
+        assert len(bench.tasks) == 8, (
+            "Should have the 7 placeholder tasks plus the scientific pilot"
+        )
 
     def test_benchmark_selective_tasks(self):
         bench = Benchmark(tasks=["paper_comprehension", "idea_generation"])
@@ -56,7 +60,7 @@ class TestBenchmark:
     def test_benchmark_run(self):
         bench = Benchmark()
         result = bench.run(model="mock", allow_draft=True)
-        assert len(result.results) == 7
+        assert len(result.results) == 8
         for r in result.results:
             assert 0.0 <= r.score <= 100.0
 

@@ -11,6 +11,33 @@ from typing import Any
 
 from researchbench import __version__
 
+# Canonical order. heterogeneous_pilot is the evidence-based scientific
+# pilot; the other seven still use the keyword-matching placeholder.
+CANONICAL_TASKS: tuple[str, ...] = (
+    "paper_comprehension",
+    "idea_generation",
+    "literature_synthesis",
+    "experimental_design",
+    "peer_review",
+    "reproduction",
+    "open_question_id",
+    "heterogeneous_pilot",
+)
+
+EVALUATOR_VERSIONS: dict[str, str] = {
+    "heterogeneous_pilot": "rubric-v0.1",
+}
+DEFAULT_EVALUATOR_VERSION = "keyword-matching-v0.1"
+
+
+def _task_dataset(mod: Any) -> Any:
+    """Return the DatasetItem collection for a task module, if it has one."""
+    return (
+        getattr(mod, "DATASET", None)
+        or getattr(mod, "PILOT_ITEMS", None)
+        or getattr(mod, "PILOT_DATASET", None)
+    )
+
 
 @dataclass
 class TaskResult:
@@ -149,10 +176,10 @@ class Benchmark:
             "peer_review": t.PeerReview(),
             "reproduction": t.Reproduction(),
             "open_question_id": t.OpenQuestionId(),
+            "heterogeneous_pilot": t.HeterogeneousPilot(),
         }
-        self.tasks: dict[str, Any] = {
-            k: all_tasks[k] for k in (tasks or list(all_tasks)) if k in all_tasks
-        }
+        order = list(tasks) if tasks else list(CANONICAL_TASKS)
+        self.tasks: dict[str, Any] = {k: all_tasks[k] for k in order if k in all_tasks}
 
     def run(
         self,
@@ -203,7 +230,7 @@ class Benchmark:
         # validated) unless allow_draft is True.
         for name in self.tasks:
             mod = importlib.import_module(f"researchbench.tasks.{name}")
-            ds = getattr(mod, "DATASET", None) or getattr(mod, "PILOT_ITEMS", None)
+            ds = _task_dataset(mod)
             if ds is None:
                 continue  # task uses legacy data, no validation
             for item in ds:
@@ -309,21 +336,13 @@ class Benchmark:
             details=details,
             raw_output="\n---\n".join(captured) if captured else "",
             duration_seconds=duration,
-            evaluator_version="keyword-matching-v0.1",
+            evaluator_version=EVALUATOR_VERSIONS.get(name, DEFAULT_EVALUATOR_VERSION),
         )
 
     @staticmethod
     def available_tasks() -> list[str]:
         """Names of every task this benchmark can run, in canonical order."""
-        return [
-            "paper_comprehension",
-            "idea_generation",
-            "literature_synthesis",
-            "experimental_design",
-            "peer_review",
-            "reproduction",
-            "open_question_id",
-        ]
+        return list(CANONICAL_TASKS)
 
     def compare(self, models: list[str], **kwargs) -> list[BenchmarkResult]:
         """Run the same tasks against each model in ``models``.

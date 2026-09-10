@@ -189,3 +189,34 @@ interface across all 7 task modules.
 - All 7 task modules remain unchanged.
 - The features are opt-in CLI flags.
 - Verified by tests (`test_run_parallel`, `test_run_save_responses`).
+
+## D-20260910-160000-rb014
+
+### Wire the BEOL scientific pilot into the default Benchmark and CLI
+- Status: accepted
+- Date: 2026-09-10
+- Deciders: grok-build session (private-repo work; no upstream PRs)
+- Supersedes: none
+
+### Context
+
+Issue #13 implemented `heterogeneous_pilot` (5 DatasetItems, rubric scorer,
+blinded calibration pack) and 270 tests. `Benchmark` and the CLI still only
+knew the original 7 keyword-matching tasks, so `researchbench run` never
+executed the scientific pilot. `data --validate` looked for `PILOT_ITEMS`
+while the module exported `PILOT_DATASET`.
+
+### Decision
+
+Register `heterogeneous_pilot` as the eighth canonical task. Alias
+`DATASET = PILOT_ITEMS = PILOT_DATASET`. Use `evaluator_version=rubric-v0.1`
+only for that task. Keep the seven legacy tasks on keyword-matching-v0.1.
+Do not rename the package (user decision; see `docs/NAME_CANDIDATES.md`).
+
+### Consequences
+
+- `researchbench list|run|sample|data|verify` include the pilot.
+- Default `Benchmark()` has 8 tasks. `run --tasks heterogeneous_pilot`
+  does not need `--allow-draft` (items are `reviewed`).
+- Tests: 275 passed.
+- Human calibration and a public rename remain user/expert work.

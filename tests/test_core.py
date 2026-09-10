@@ -114,6 +114,7 @@ class TestBenchmarkRunner:
             "peer_review",
             "reproduction",
             "open_question_id",
+            "heterogeneous_pilot",
         ]
 
     def test_compare_returns_one_result_per_model(self, bench):

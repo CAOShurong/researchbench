@@ -269,15 +269,18 @@ to avoid confusion and misrepresentation. The rename is a user decision.
 
 | Benchmark | What it measures | Status | Our differentiation (proposed) |
 |---|---|---|---|
-| ResearchBench (2025) | Scientific discovery, idea retrieval, hypothesis generation | Published paper + code | TBD — must not claim to be the first |
-| ResearcherBench | Open research questions | Exists | TBD |
-| DeepResearch Bench | Research reports | Exists | TBD |
-| RPC-Bench (ACL 2026) | Paper understanding | Exists | TBD |
-| PaperQA2 / PaperQA | AI paper QA system (not a benchmark) | 9.1k stars, published | We are a benchmark, not a system. |
-| SciCode | Science code problems | ~200 stars | We measure the full research pipeline, not just coding. |
-| MLAgentBench | ML experiment agent | Exists | We measure academic research broadly, not just ML experimentation. |
-| MMLU / GPQA | Knowledge (MCQ) | 26k/530 stars | We measure process skills, not factual recall. |
-| SWE-bench | GitHub issue fixing | 16k stars | We measure research reasoning, not software engineering. |
+| ResearchBench (Liu et al., ACL 2026 Findings, arXiv:2503.21248) | Inspiration retrieval, hypothesis composition, ranking on 2024+ papers | Published paper + dataset + code. **Name collision.** | We are not that project. Do not claim to be first. See `docs/NAME_CANDIDATES.md`. |
+| ResearcherBench (Xu et al., COLM 2026) | 65 frontier AI research questions for deep-research systems | Public benchmark + dual rubric/citation eval | AI-research questions, not EE device/process constraints. |
+| DeepResearch Bench (Du et al., arXiv:2506.11763) | 100 PhD-level report tasks for deep-research agents | Public; RACE + FACT judges | Report writing, not closed scientific items. |
+| Deep Research Bench (FutureSearch, arXiv:2506.06287) | 89 frozen-web research tasks | Public leaderboard + RetroSearch | Web-agent search quality. |
+| RPC-Bench (Chen et al., arXiv:2601.14289) | 15k paper-comprehension QA from CS review–rebuttal | Public | CS paper QA, not BEOL/device reasoning. |
+| PaperQA2 / PaperQA | AI paper QA *system* (not a benchmark) | 9.1k stars, published | Wrong category: we evaluate models. |
+| SciCode | Science code problems | Exists | Coding, not research-assistant reasoning. |
+| MLAgentBench | ML experiment agent | Exists | ML engineering loop. |
+| MMLU / GPQA | Knowledge (MCQ) | Established | Recall, not process skill. |
+| SWE-bench | GitHub issue fixing | Established | Software engineering. |
+
+Filled comparison notes: `docs/BENCHMARK_COMPARISON.md`.
 
 **Do not claim "no existing benchmark covers this gap."** Multiple benchmarks
 now cover overlapping territory. Our differentiation must come from specific
