@@ -16,6 +16,17 @@ No key → mock mode (smoke test). With a key → real answers, scored by a code
 rubric (thermal budget, IGZO, HZO, 2D transfer vs growth, Cu–Cu hybrid bonding).
 Wrong-but-fluent answers that trip hard negatives lose points.
 
+```text
+ResearchBench Results: gpt-4o
+============================================================
+  heterogeneous_pilot      :  13.78
+------------------------------------------------------------
+  AVERAGE                  :  13.78
+```
+
+That 13.78 is **mock-mode** with no API key (one canned paragraph, five rubric
+items). It is not a model ranking.
+
 > Unrelated to Liu et al. *ResearchBench* (ACL 2026 Findings). This repo is an
 > **evaluation-framework prototype**, not a validated leaderboard.
 
