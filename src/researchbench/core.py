@@ -198,8 +198,9 @@ class Benchmark:
         When *benchmark* is True, per-task timing is printed to stderr.
         When *save_responses_dir* is set, every raw model response is appended
         (not overwritten) to ``<dir>/<task_name>.txt``.
-        When *allow_draft* is False, tasks with draft-only dataset items are
-        rejected before any model call.
+        When *allow_draft* is False, tasks whose dataset has no reviewed or
+        validated items are rejected before any model call. Mixed datasets
+        still run; task evaluators skip draft items unless *allow_draft*.
         Monkeypatches on ``_call_model`` are always restored via try/finally.
         """
         import sys
@@ -224,27 +225,33 @@ class Benchmark:
             run_config=run_config,
         )
 
-        # Validate dataset items before any model call. If a task module has
-        # a DATASET (or PILOT_ITEMS) collection of DatasetItem objects, every
-        # item must pass validate_item() and must be runnable (reviewed or
-        # validated) unless allow_draft is True.
+        # Validate dataset items before any model call. Every DatasetItem must
+        # pass validate_item(). Draft-only datasets still require allow_draft;
+        # mixed collections may run, and evaluators skip drafts unless allowed.
         for name in self.tasks:
             mod = importlib.import_module(f"researchbench.tasks.{name}")
             ds = _task_dataset(mod)
             if ds is None:
                 continue  # task uses legacy data, no validation
+            runnable_count = 0
+            first_unrunnable: Any = None
             for item in ds:
                 errs = validate_item(item)
                 if errs:
                     raise ValueError(
                         f"Task '{name}' item '{item.id}' failed validation: {'; '.join(errs)}"
                     )
-                if not allow_draft and not is_runnable(item):
-                    raise ValueError(
-                        f"Task '{name}' item '{item.id}' has review_status="
-                        f"'{item.provenance.review_status}' (draft). "
-                        f"Use --allow-draft to run draft items."
-                    )
+                if is_runnable(item):
+                    runnable_count += 1
+                elif first_unrunnable is None:
+                    first_unrunnable = item
+            if not allow_draft and runnable_count == 0 and first_unrunnable is not None:
+                status = first_unrunnable.provenance.review_status
+                raise ValueError(
+                    f"Task '{name}' item '{first_unrunnable.id}' has review_status="
+                    f"'{status}' (draft). "
+                    f"Use --allow-draft to run draft items."
+                )
 
         # Set up per-task monkeypatch wrappers for raw-output capture and
         # --save-responses. ALL wrappers are installed before ANY evaluation
@@ -282,7 +289,7 @@ class Benchmark:
             def _eval(name_task: tuple[str, Any]) -> tuple[str, float, dict[str, Any], float]:
                 n, t = name_task
                 t0 = time.perf_counter()
-                sc, det = t.evaluate(model=model, **kwargs)
+                sc, det = t.evaluate(model=model, allow_draft=allow_draft, **kwargs)
                 return n, sc, det, time.perf_counter() - t0
 
             if parallel:

@@ -11,10 +11,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from researchbench.dataset_schema import DatasetItem, Provenance, validate_item
+from researchbench.dataset_schema import DatasetItem, Provenance, is_runnable, validate_item
 from researchbench.rubric import Criterion, Rubric, RubricResult
 
-# --- Rubrics for the 5 pilot items -------------------------------------------
+# --- Rubrics for the 5 reviewed items + 1 draft post-cutoff item -------------
 
 RUBRIC_BEOL_THERMAL_BUDGET = Rubric(
     passing_threshold=65.0,
@@ -264,6 +264,58 @@ RUBRIC_HYBRID_BONDING = Rubric(
     ],
 )
 
+RUBRIC_IGZO_CHANNEL_CAPPING = Rubric(
+    passing_threshold=65.0,
+    criteria=[
+        Criterion(
+            name="beol_400c_budget",
+            description="States the 400 deg C BEOL thermal-budget compatibility claimed for the IGZO/In2O3 process.",
+            weight=1.0,
+            evidence_patterns=[
+                r"400\s*(?:°|deg|celsius|c)",
+                r"thermal\s+budget",
+                r"beol",
+            ],
+            negative_patterns=[
+                r">?\s*[6-9]\d{2}\s*(?:°|deg|c)",
+            ],
+        ),
+        Criterion(
+            name="in2o3_sio2_capping",
+            description="Identifies the amorphous In2O3 mixed with SiO2 capping layer (not conventional SiO2-only encapsulation).",
+            weight=1.0,
+            evidence_patterns=[
+                r"in2o3",
+                r"in\s*2\s*o\s*3",
+                r"indium\s+oxide",
+                r"sio2",
+                r"si\s*o\s*2",
+                r"capp",
+                r"amorphous",
+            ],
+            negative_patterns=[
+                r"conventional\s+sio2\s+(?:is|was)\s+superior",
+            ],
+        ),
+        Criterion(
+            name="mobility_and_pbs",
+            description="Reports ~33.1 cm^2/V.s extrinsic saturation mobility and ~5 mV PBS Vt shift at 3 MV/cm for 1000 s.",
+            weight=1.0,
+            evidence_patterns=[
+                r"33(?:\.1)?",
+                r"cm\^?2",
+                r"5\s*mv",
+                r"(?:positive[- ]bias|pbs)",
+                r"3\s*mv\s*/\s*cm",
+                r"1000\s*s",
+            ],
+            negative_patterns=[
+                r"hole\s+mobility",
+            ],
+        ),
+    ],
+)
+
 # --- Authoritative Dataset Items ----------------------------------------------
 
 PILOT_DATASET: list[DatasetItem] = [
@@ -482,6 +534,58 @@ PILOT_DATASET: list[DatasetItem] = [
             "rubric": RUBRIC_HYBRID_BONDING.to_dict(),
         },
     ),
+    DatasetItem(
+        id="heterogeneous_pilot/igzo_in2o3_channel_capping/q6",
+        capability_tags=["C1", "C5"],
+        ground_truth=(
+            "Cheng et al. (arXiv:2603.23341) demonstrate IGZO and In2O3 transistors compatible "
+            "with a 400 deg C BEOL thermal budget. An indium oxide transistor with an amorphous "
+            "In2O3 mixed with SiO2 capping layer shows a positive threshold voltage, extrinsic "
+            "saturation mobility of 33.1 cm^2/V.s, and a 5 mV Vt shift after positive-bias stress "
+            "at 3 MV/cm for 1000 s at room temperature, superior to conventional SiO2 encapsulation."
+        ),
+        ground_truth_source=(
+            "Cheng et al., arXiv:2603.23341 (submitted 24 Mar 2026), DOI: 10.48550/arXiv.2603.23341"
+        ),
+        scoring_method="rubric",
+        contamination_risk="low",
+        provenance=Provenance(
+            source_id="arXiv:2603.23341",
+            source_type="paper",
+            license="CC-BY-NC-ND-4.0",
+            author_role="benchmark_author",
+            reviewer_role="",
+            review_status="draft",
+            review_notes=(
+                "Draft item grounded in the arXiv abstract of Cheng et al. 2026. "
+                "Not expert-reviewed; do not treat as a validated benchmark item."
+            ),
+        ),
+        expert_notes=(
+            "Facts are taken from the 24 Mar 2026 arXiv abstract only. A domain expert "
+            "must confirm numbers against the full paper before review_status can change."
+        ),
+        hard_negatives=[
+            {
+                "text": "Conventional SiO2 encapsulation is superior to In2O3-SiO2 mixed capping under PBS.",
+                "penalty": "inverts_paper_comparison",
+            },
+            {
+                "text": "The process requires an 800 deg C crystallization anneal that exceeds the BEOL budget.",
+                "penalty": "violates_reported_400c_budget",
+            },
+        ],
+        version="1.0",
+        task_data={
+            "question": (
+                "Cheng et al. (arXiv:2603.23341, 24 Mar 2026) report IGZO and In2O3 transistors "
+                "compatible with a 400 deg C BEOL thermal budget. What channel-capping layer do they "
+                "use on the indium oxide transistor, and what extrinsic saturation mobility and "
+                "positive-bias-stress Vt shift do they report relative to conventional SiO2 encapsulation?"
+            ),
+            "rubric": RUBRIC_IGZO_CHANNEL_CAPPING.to_dict(),
+        },
+    ),
 ]
 
 # Aliases so Benchmark validation and the CLI data/sample commands find the
@@ -496,12 +600,27 @@ class HeterogeneousPilot:
     def __init__(self, dataset: list[DatasetItem] | None = None):
         self.dataset = dataset or PILOT_DATASET
 
-    def evaluate(self, model: str = "gpt-4o", **kwargs) -> tuple[float, dict[str, Any]]:
+    def evaluate(
+        self, model: str = "gpt-4o", allow_draft: bool = False, **kwargs: Any
+    ) -> tuple[float, dict[str, Any]]:
         total_score = 0.0
         max_score = 0.0
         details: dict[str, Any] = {}
-
+        skipped_draft: list[str] = []
+        items: list[DatasetItem] = []
         for item in self.dataset:
+            if allow_draft or is_runnable(item):
+                items.append(item)
+            else:
+                skipped_draft.append(item.id)
+
+        if not items:
+            raise ValueError(
+                "No runnable heterogeneous_pilot items. "
+                "Use allow_draft=True to evaluate draft items."
+            )
+
+        for item in items:
             errs = validate_item(item)
             if errs:
                 raise ValueError(f"DatasetItem {item.id} failed validation: {'; '.join(errs)}")
@@ -524,7 +643,11 @@ class HeterogeneousPilot:
             }
 
         norm_score = (total_score / max_score * 100.0) if max_score > 0 else 0.0
-        return round(norm_score, 2), {"per_item": details, "total_items": len(self.dataset)}
+        return round(norm_score, 2), {
+            "per_item": details,
+            "total_items": len(items),
+            "skipped_draft_item_ids": skipped_draft,
+        }
 
 
 def _call_model(model: str, prompt: str) -> str:

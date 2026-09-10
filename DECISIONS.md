@@ -220,3 +220,30 @@ Do not rename the package (user decision; see `docs/NAME_CANDIDATES.md`).
   does not need `--allow-draft` (items are `reviewed`).
 - Tests: 275 passed.
 - Human calibration and a public rename remain user/expert work.
+
+## D-20260910-180000-rb015
+
+### Mixed reviewed+draft datasets skip drafts unless `--allow-draft`
+- Status: accepted
+- Date: 2026-09-10
+- Deciders: grok-build session (private-repo work; no upstream PRs)
+- Supersedes: none (narrows D-20260910-160000-rb014 draft handling)
+
+### Context
+
+The contamination-resistant sixth `heterogeneous_pilot` item must live in
+`PILOT_DATASET` with `review_status=draft` (no fake expert review). The
+previous runner rejected a task if *any* item was draft, which would have
+blocked the five reviewed items.
+
+### Decision
+
+If a task dataset has at least one reviewed/validated item, default `run`
+evaluates only those items and skips drafts. Draft-only datasets (e.g.
+`paper_comprehension`) still require `--allow-draft`. `data --validate`
+checks schema for every item, including drafts.
+
+### Consequences
+
+- Default `run --tasks heterogeneous_pilot` still works without the flag.
+- `--allow-draft` includes `q6` (arXiv:2603.23341). Do not call `q6` validated.

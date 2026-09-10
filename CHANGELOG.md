@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/BENCHMARK_COMPARISON.md` completes RESEARCH_BENCHMARK.md §8 against
   Liu ResearchBench, ResearcherBench, DeepResearch Bench, RPC-Bench, and
   related suites. `docs/NAME_CANDIDATES.md` lists three rename options.
+- Draft contamination-resistant pilot item `q6` grounded in Cheng et al.,
+  arXiv:2603.23341 (24 Mar 2026). Default `run` still scores only the five
+  reviewed items; `--allow-draft` includes `q6`. Not expert-reviewed.
 
 ## [0.1.0] - 2026-08-20
 

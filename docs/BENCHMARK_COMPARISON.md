@@ -81,16 +81,17 @@ claiming validity (`HANDOFF.md`).
 
 ### Contamination
 
-Liu ResearchBench uses 2024+ papers. Our five pilot items are standard
+Liu ResearchBench uses 2024+ papers. Five reviewed pilot items are standard
 BEOL facts likely present in training data; `contamination_risk=low` on
-those items is optimistic and should be revisited with post-cutoff papers.
+those items is optimistic. A sixth *draft* item is grounded in Cheng et al.,
+arXiv:2603.23341 (24 Mar 2026) and is not expert-reviewed.
 
 ### Real researcher workflow
 
 Deep-research benches match “write me a report.” This project’s intended
 workflow is “help with a specific scientific question under physical
 constraints, and show the evidence.” The pilot is closer to the second
-workflow, but it is five items.
+workflow, but it is five reviewed items plus one unreviewed draft.
 
 ## What we will not claim
 

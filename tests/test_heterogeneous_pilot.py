@@ -2,7 +2,7 @@
 
 Covers:
 - Rubric and Criterion scoring mechanics (evidence patterns, negative indicator penalties, thresholds).
-- Strict schema validation for all 5 pilot dataset items (validate_item and is_runnable).
+- Strict schema validation for 5 reviewed + 1 draft pilot items.
 - Evaluation pipeline with audit detail breakdowns.
 - Blinded human calibration pack export.
 """
@@ -81,25 +81,46 @@ class TestRubricEvaluator:
 
 
 class TestPilotDatasetSchema:
-    def test_dataset_contains_5_items(self):
-        assert len(PILOT_DATASET) == 5
+    def test_dataset_contains_reviewed_and_one_draft_item(self):
+        assert len(PILOT_DATASET) == 6
+        reviewed = [
+            it
+            for it in PILOT_DATASET
+            if it.provenance and it.provenance.review_status == "reviewed"
+        ]
+        drafts = [
+            it for it in PILOT_DATASET if it.provenance and it.provenance.review_status == "draft"
+        ]
+        assert len(reviewed) == 5
+        assert len(drafts) == 1
+        draft = drafts[0]
+        assert draft.id == "heterogeneous_pilot/igzo_in2o3_channel_capping/q6"
+        assert draft.provenance.source_id == "arXiv:2603.23341"
+        assert "10.48550/arXiv.2603.23341" in draft.ground_truth_source
+        assert is_runnable(draft) is False
+        assert draft.provenance.reviewer_role == ""
 
     def test_all_items_pass_strict_validation(self):
         for item in PILOT_DATASET:
             errors = validate_item(item)
             assert errors == [], f"Item {item.id} failed validation: {errors}"
 
-    def test_all_items_are_runnable(self):
+    def test_reviewed_items_are_runnable_draft_is_not(self):
         for item in PILOT_DATASET:
-            assert is_runnable(item) is True, f"Item {item.id} must be runnable (reviewed status)"
+            assert item.provenance is not None
+            if item.provenance.review_status == "reviewed":
+                assert is_runnable(item) is True
+            else:
+                assert is_runnable(item) is False
 
     def test_items_have_rubrics_and_hard_negatives(self):
         for item in PILOT_DATASET:
             assert "rubric" in item.task_data
             assert len(item.hard_negatives) >= 1
             assert item.provenance is not None
-            assert item.provenance.reviewer_role == "cao_shurong"
             assert item.contamination_risk == "low"
+            if item.provenance.review_status == "reviewed":
+                assert item.provenance.reviewer_role == "cao_shurong"
 
 
 class TestHeterogeneousPilotExecution:
@@ -116,6 +137,19 @@ class TestHeterogeneousPilotExecution:
             assert "max" in report
             assert "criteria" in report
             assert report["review_status"] == "reviewed"
+        assert (
+            "heterogeneous_pilot/igzo_in2o3_channel_capping/q6" in details["skipped_draft_item_ids"]
+        )
+
+    def test_evaluate_includes_draft_with_allow_draft(self):
+        pilot = HeterogeneousPilot()
+        score, details = pilot.evaluate(model="gpt-4o", allow_draft=True)
+        assert isinstance(score, float)
+        assert details["total_items"] == 6
+        assert details["skipped_draft_item_ids"] == []
+        draft_id = "heterogeneous_pilot/igzo_in2o3_channel_capping/q6"
+        assert draft_id in details["per_item"]
+        assert details["per_item"][draft_id]["review_status"] == "draft"
 
 
 class TestBlindedCalibrationPack:
@@ -180,6 +214,35 @@ class TestPilotCLIWiring:
         data = json.loads(result.output)
         assert data["results"][0]["task"] == "heterogeneous_pilot"
         assert data["results"][0]["evaluator_version"] == "rubric-v0.1"
+        assert data["results"][0]["details"]["total_items"] == 5
+        assert (
+            "heterogeneous_pilot/igzo_in2o3_channel_capping/q6"
+            in data["results"][0]["details"]["skipped_draft_item_ids"]
+        )
+
+    def test_cli_run_with_allow_draft_includes_draft_item(self):
+        from click.testing import CliRunner
+
+        from researchbench.cli import main
+
+        runner = CliRunner()
+        result = runner.invoke(
+            main,
+            [
+                "run",
+                "--tasks",
+                "heterogeneous_pilot",
+                "--model",
+                "gpt-4o",
+                "--allow-draft",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code == 0, result.output
+        data = json.loads(result.output)
+        assert data["results"][0]["details"]["total_items"] == 6
+        assert data["results"][0]["details"]["skipped_draft_item_ids"] == []
 
     def test_cli_data_validate(self):
         from click.testing import CliRunner
@@ -189,4 +252,4 @@ class TestPilotCLIWiring:
         runner = CliRunner()
         result = runner.invoke(main, ["data", "heterogeneous_pilot", "--validate"])
         assert result.exit_code == 0, result.output
-        assert "5 pilot item(s) OK" in result.output
+        assert "6 pilot item(s) OK" in result.output
