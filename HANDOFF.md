@@ -3,9 +3,9 @@ schema_version: portable-project-memory/v1
 handoff_revision: 16
 updated_at: "2026-09-10T21:15:00+08:00"
 updated_by: "loop-5m"
-base_revision: git:6e142c5a4133ecd6b9df92c5e9ae6930d54b53df
-workspace_fingerprint: sha256:6e142c5a4133ecd6b9df92c5e9ae6930d54b53df
-context_fingerprint: sha256:6e142c5a4133ecd6b9df92c5e9ae6930d54b53df
+base_revision: git:a070247626738cd120ee69257c170b5d64f0c34b
+workspace_fingerprint: sha256:a070247626738cd120ee69257c170b5d64f0c34b
+context_fingerprint: sha256:a070247626738cd120ee69257c170b5d64f0c34b
 status: active
 ---
 
@@ -20,7 +20,7 @@ work that needs them later.
 ## Confirmed state
 
 - GitHub: `https://github.com/CAOShurong/researchbench` (private).
-- Default branch: `master` (this fire: `6e142c5`).
+- Default branch: `master` (this fire: `a070247`).
 - Package version **0.4.1** (v0.4.0 tag remains at 372ef51, before CLI
   wiring and q6).
 - 281 tests passed (pytest), ruff and mypy clean on this fire.
