@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-10
+
+### Added
+
+- Wired `heterogeneous_pilot` into `Benchmark`, `available_tasks()`, and the
+  CLI (`list` / `run` / `sample` / `data` / `verify`). Dataset aliases
+  `DATASET` and `PILOT_ITEMS` share the same items. Run records for this task
+  use `evaluator_version=rubric-v0.1`.
+- Draft contamination-resistant pilot item `q6` grounded in Cheng et al.,
+  arXiv:2603.23341 (24 Mar 2026). Default `run` scores only reviewed items;
+  `--allow-draft` includes `q6`. Not expert-reviewed; remains draft.
+- Skip-if-busy agent lock (`.ai/agent_lock.py`) so overlapping continuation
+  loops skip instead of racing.
+
+### Fixed
+
+- README / USAGE / FAQ / API / PROJECT_CONTEXT match the actual CLI (11
+  commands, `--allow-draft`, `run-record`, 8 tasks, 281 tests).
+- README no longer claims blinded human expert calibration as a delivered
+  feature. FAQ no longer claims this is the first ResearchBench.
+
+## [0.4.0] - 2026-09-10
+
 ### Added
 
 - Scientific pilot for heterogeneous integration and BEOL-compatible devices
@@ -18,23 +41,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   structured criteria weighting, required evidence pattern matching, hard-negative
   penalty subtraction, and per-criterion audit breakdown.
 - Blinded human calibration pack export (`export_blinded_calibration_pack`)
-  supporting inter-annotator agreement studies without evaluator bias.
+  for inter-annotator studies. Export exists; no human calibration has been run.
 - Unit test suite for rubric scoring, schema validation, and pilot execution
   (`tests/test_heterogeneous_pilot.py`).
-- Wired `heterogeneous_pilot` into `Benchmark`, `available_tasks()`, and the
-  CLI (`list` / `run` / `sample` / `data` / `verify`). Dataset aliases
-  `DATASET` and `PILOT_ITEMS` point at the same five items. Run records for
-  this task use `evaluator_version=rubric-v0.1`.
 - `docs/BENCHMARK_COMPARISON.md` completes RESEARCH_BENCHMARK.md §8 against
   Liu ResearchBench, ResearcherBench, DeepResearch Bench, RPC-Bench, and
-  related suites. `docs/NAME_CANDIDATES.md` lists three rename options.
-- Draft contamination-resistant pilot item `q6` grounded in Cheng et al.,
-  arXiv:2603.23341 (24 Mar 2026). Default `run` still scores only the five
-  reviewed items; `--allow-draft` includes `q6`. Not expert-reviewed.
-- Skip-if-busy agent lock (`.ai/agent_lock.py`) so a 5-minute continuation
-  loop exits immediately when another agent already holds the tree.
-- README / USAGE / PROJECT_CONTEXT aligned with 8 tasks and 277 tests.
-  User 2026-09-10 allowed `git push` on this private repository.
+  related suites. `docs/NAME_CANDIDATES.md` lists rename options (not requested).
 
 ## [0.1.0] - 2026-08-20
 
@@ -79,4 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `CHANGELOG`, `docs/ROADMAP.md`, `pre-commit`, Dependabot, and issue/PR
   templates.
 
+[Unreleased]: https://github.com/CAOShurong/researchbench/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/CAOShurong/researchbench/releases/tag/v0.4.1
+[0.4.0]: https://github.com/CAOShurong/researchbench/releases/tag/v0.4.0
 [0.1.0]: https://github.com/CAOShurong/researchbench/releases/tag/v0.1.0

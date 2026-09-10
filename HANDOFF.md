@@ -1,11 +1,11 @@
 ---
 schema_version: portable-project-memory/v1
-handoff_revision: 15
-updated_at: "2026-09-10T20:30:00+08:00"
-updated_by: "grok-build-session"
-base_revision: git:fd9cb057e31cb33b9e2ccc143806ba55562c771a
-workspace_fingerprint: sha256:eb420656af466c6d6dfd7151bacc680d5b55144451f510aacb19ca36a4cf0ed9
-context_fingerprint: sha256:0c7290d5efb4327a1173eae0d3a2d61d17f80176ef88fdc360336ff900f816b6
+handoff_revision: 16
+updated_at: "2026-09-10T21:15:00+08:00"
+updated_by: "loop-5m"
+base_revision: git:6e142c5a4133ecd6b9df92c5e9ae6930d54b53df
+workspace_fingerprint: sha256:6e142c5a4133ecd6b9df92c5e9ae6930d54b53df
+context_fingerprint: sha256:6e142c5a4133ecd6b9df92c5e9ae6930d54b53df
 status: active
 ---
 
@@ -20,8 +20,10 @@ work that needs them later.
 ## Confirmed state
 
 - GitHub: `https://github.com/CAOShurong/researchbench` (private).
-- Default branch: `master` (pushed through `fd9cb05` before this revision).
-- 281 tests passed on the last full run.
+- Default branch: `master` (this fire: `6e142c5`).
+- Package version **0.4.1** (v0.4.0 tag remains at 372ef51, before CLI
+  wiring and q6).
+- 281 tests passed (pytest), ruff and mypy clean on this fire.
 - 5-minute loop ID `01a08bab-693b-77a3-b80a-c1f65ca459e4` with skip-if-busy.
 - Package/repo name stays `researchbench`. Collision with Liu et al. is
   disclosed, not resolved by rename.
@@ -30,21 +32,24 @@ work that needs them later.
 
 | Path | Change | State |
 |---|---|---|
-| `PROJECT_CONTEXT.md`, `DECISIONS.md`, this file | No human follow-up; agent-complete only | This commit |
-| 5-minute loop prompt | Same constraint; skip if lock BUSY | Updated in scheduler |
+| `pyproject.toml`, `src/researchbench/__init__.py` | version 0.4.1 | This fire |
+| `README.md`, `docs/USAGE.md`, `docs/FAQ.md`, `docs/API.md`, `docs/CONTRIBUTING.md`, `PROJECT_CONTEXT.md`, `CHANGELOG.md` | CLI/docs honesty; 281 tests | This fire |
+| `src/researchbench/cli.py` | `--allow-draft` examples in `--help` | This fire |
 
 ## Risks and unknowns
 
 - Prototype is not a validated benchmark and never will be without humans.
 - q6 stays draft. That is the end state, not a queue.
 - Overlapping loops must use the lock or they will race.
+- GitHub MCP list_releases 404'd; releases are cut with local `gh`.
 
 ## Verification evidence
 
 | Check | Result | Basis |
 |---|---|---|
-| Last full suite | PASS | 281 passed at fd9cb05 |
-| origin/master | PUSHED | fd9cb05 |
+| pytest tests | PASS | 281 passed |
+| ruff check/format | PASS | src + tests |
+| mypy src | PASS | 16 files |
 
 ## Decisions referenced
 

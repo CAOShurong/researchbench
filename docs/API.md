@@ -17,9 +17,10 @@ The main entry point for running evaluations.
 class Benchmark(tasks: list[str] | None = None)
 ```
 
-- **`tasks`** — list of task names to include, or `None` (all 7). Valid names:
+- **`tasks`** — list of task names to include, or `None` (all 8). Valid names:
   `paper_comprehension`, `idea_generation`, `literature_synthesis`,
-  `experimental_design`, `peer_review`, `reproduction`, `open_question_id`.
+  `experimental_design`, `peer_review`, `reproduction`, `open_question_id`,
+  `heterogeneous_pilot`.
 
 ### `run(model, **kwargs) -> BenchmarkResult`
 
@@ -28,10 +29,15 @@ Evaluate every active task against the given model.
 - **`model`** — a model identifier string (default `"gpt-4o"`). The task's
   `_call_model` decides, based on the prefix, whether to call the live
   `openai`/`anthropic` API or return a mock answer.
-- **`**kwargs`** — forwarded to each task's `evaluate()` method for future
-  extension (currently unused by the built-in tasks).
+- **`capture_raw`** — store raw model text on each `TaskResult` (default True).
+- **`parallel`** — run tasks concurrently (default False).
+- **`benchmark`** — print per-task timing to stderr (default False).
+- **`save_responses_dir`** — append raw responses under this directory.
+- **`allow_draft`** — include draft-status dataset items (default False).
+- **`**kwargs`** — forwarded to each task's `evaluate()` method.
 
-Returns a `BenchmarkResult` with one `TaskResult` per task.
+Returns a `BenchmarkResult` with one `TaskResult` per task. Draft-only tasks
+raise `ValueError` unless `allow_draft=True`.
 
 ### `compare(models, **kwargs) -> list[BenchmarkResult]`
 
@@ -57,6 +63,9 @@ Holds the evaluation results for one model.
 class BenchmarkResult:
     results: list[TaskResult]   # one per task
     model: str                  # the model identifier
+    timestamp: str = ""
+    benchmark_version: str = ""
+    run_config: dict = {}                   # allow_draft, parallel, etc.
 ```
 
 ### `average() -> float`
@@ -68,10 +77,11 @@ Simple mean of all task scores. Returns `0.0` when `results` is empty.
 Short text report (alias for `to_text(verbose=False)`). Backward-compatible
 with the initial v0.1.0 API.
 
-### `to_text(verbose=False) -> str`
+### `to_text(verbose=False, quiet=False) -> str`
 
 Human-readable report. When `verbose=True`, each task's `details` dict is
-printed so you can inspect keyword coverage, flaw counts, etc.
+printed so you can inspect keyword coverage, flaw counts, etc. When
+`quiet=True` the header banner is omitted.
 
 ### `to_json() -> str`
 
@@ -81,7 +91,7 @@ JSON document with the structure:
 {
   "model": "gpt-4o",
   "average": 56.72,
-  "n_tasks": 7,
+  "n_tasks": 8,
   "results": [
     {"task": "paper_comprehension", "score": 27.5, "details": {...}},
     ...
@@ -111,7 +121,9 @@ class TaskResult:
     score: float          # in [0, 100]
     details: dict         # task-specific breakdown (keys documented in
                           # TASK_DEFINITIONS.md)
-    raw_output: str = ""  # reserved for future use (not yet populated)
+    raw_output: str = ""
+    duration_seconds: float = 0.0
+    evaluator_version: str = ""
 ```
 
 ---
@@ -128,7 +140,8 @@ class PaperComprehension:
 ```
 
 The same pattern holds for `IdeaGeneration`, `LiteratureSynthesis`,
-`ExperimentalDesign`, `PeerReview`, `Reproduction`, and `OpenQuestionId`.
+`ExperimentalDesign`, `PeerReview`, `Reproduction`, `OpenQuestionId`, and
+`HeterogeneousPilot` (rubric scorer, not keyword matching).
 
 - **Return value**: `(score, details)` where `score` is a float in `[0, 100]`
   and `details` is a dict whose structure is documented per-task in

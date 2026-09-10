@@ -53,7 +53,7 @@ The GitHub Actions CI (`.github/workflows/ci.yml`) runs:
 - **typecheck** job: `mypy src` on Python 3.11.
 - **build** job: builds the sdist and wheel with `python -m build`, installs the
   wheel into a clean virtualenv, and smoke-tests `researchbench --version`,
-  `list` and `run --format json`.
+  `list` and `run --tasks paper_comprehension --allow-draft --format json`.
 
 On the 80% coverage gate: the missing ~12% is the *live* model-SDK branches
 inside each task's `_call_model` (the real `openai`/`anthropic` calls), which

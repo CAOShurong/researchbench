@@ -1,17 +1,18 @@
 # ResearchBench
 
 ![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-277%20passed-brightgreen)
+![Tests](https://img.shields.io/badge/tests-281%20passed-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
 ![Provenance](https://img.shields.io/badge/provenance-W3C%20JSON--LD-purple)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-> **Status: Active research evaluation framework (v0.4.0).**
+> **Status: evaluation-framework prototype (v0.4.1).** Not a validated benchmark.
 >
-> This project provides a **rigorous evaluation harness for frontier AI scientific reasoning**,
-> featuring calibrated domain rubrics, hard-negative reasoning traps, and blinded human expert
-> calibration across heterogeneous integration, peer review, and reproduction diagnosis.
-> See [`RESEARCH_BENCHMARK.md`](RESEARCH_BENCHMARK.md) for the design document and roadmap.
+> CLI and mock-mode harness for research-capability tasks. Seven tasks still use
+> keyword-matching placeholders. `heterogeneous_pilot` uses a coded rubric with
+> hard-negative penalties; items are not expert-calibrated. Name collides with
+> Liu et al. ResearchBench (ACL 2026 Findings) — this repo is unrelated.
+> See [`RESEARCH_BENCHMARK.md`](RESEARCH_BENCHMARK.md) for the design document.
 
 ## What this is
 
@@ -33,7 +34,7 @@ The current prototype provides:
 - A CLI (`researchbench` / `python -m researchbench`)
 - Mock mode (no API key required) for offline testing and deterministic CI
 - Report formats: text, JSON, HTML
-- **277 passing unit tests** and multi-OS CI
+- **281 passing unit tests** and multi-OS CI
 
 **What it does NOT yet have:**
 

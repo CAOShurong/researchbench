@@ -2,10 +2,12 @@
 
 ## What is ResearchBench?
 
-A benchmarking suite that measures AI models on 7 academic and research
-capabilities: paper comprehension, idea generation, literature synthesis,
-experimental design, peer review, reproduction diagnosis, and open question
-identification. See [`docs/TASK_DEFINITIONS.md`](TASK_DEFINITIONS.md).
+A research-capability evaluation **prototype** with 8 tasks: seven
+keyword-matching placeholders (paper comprehension, idea generation, literature
+synthesis, experimental design, peer review, reproduction diagnosis, open
+question identification) plus `heterogeneous_pilot` (rubric scoring). It is
+**not** a validated benchmark and is **not** Liu et al. ResearchBench
+(ACL 2026 Findings). See [`docs/TASK_DEFINITIONS.md`](TASK_DEFINITIONS.md).
 
 ## Do I need an API key to use it?
 
@@ -39,7 +41,7 @@ response. This is documented in the scoring formulas.
 ## How do I compare multiple models?
 
 ```bash
-researchbench compare --model gpt-4o --model claude-3-opus --tasks all
+researchbench compare --model gpt-4o --model claude-3-opus --tasks all --allow-draft
 ```
 
 Use `--format html --save cmp.html` for a self-contained comparison page, or
@@ -83,7 +85,8 @@ See [`docs/RESEARCH.md`](RESEARCH.md) for a full landscape analysis. The short
 answer: those benchmarks measure knowledge, coding, or exam skills, not
 academic research capabilities (paper critique, idea generation, literature
 synthesis, experimental design, peer review, reproduction, open question
-identification). ResearchBench is the first to target this gap.
+identification). This prototype targets that gap; it is not the first project
+named ResearchBench and does not claim priority over Liu et al. or related suites.
 
 ## Why is the runtime dependency only `click`?
 

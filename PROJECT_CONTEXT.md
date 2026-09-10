@@ -1,7 +1,7 @@
 ---
 schema_version: portable-project-memory/v1
 project_name: "ResearchBench"
-updated_at: "2026-08-21T09:45:00+08:00"
+updated_at: "2026-09-10T21:00:00+08:00"
 ---
 
 # Project Context
@@ -14,16 +14,17 @@ research capabilities. **The authoritative design document is
 answers: *"Which AI system is genuinely the better research assistant, in what
 research abilities, under what conditions, and how do we know?"*
 
-The current v0.1.0 implementation uses keyword-matching scoring as a
-**placeholder**. It is not scientifically valid and must be replaced per the
-roadmap in RESEARCH_BENCHMARK.md Section 11.
+The current v0.4.1 implementation uses keyword-matching scoring as a
+**placeholder** on seven tasks. `heterogeneous_pilot` uses a coded rubric.
+Neither is a validated benchmark. Replace keyword matching per
+RESEARCH_BENCHMARK.md Section 11. Do not wait for human review.
 
 ## Deliverables
 
 - A pip-installable Python package (`researchbench`) with 7 keyword-matching
   placeholder tasks plus `heterogeneous_pilot` (rubric), and a CLI.
-- 160+ tests with 88% coverage, CI (ruff, mypy, pytest with coverage gate,
-  wheel build + clean-install smoke test).
+- 281 tests, CI (ruff, mypy, pytest with coverage gate, wheel build +
+  clean-install smoke test).
 - Full documentation: task definitions, usage guide, contributing guide, API
   reference, FAQ, roadmap, JSON report schema.
 - Runnable CLI/Python API examples in mock mode (no API key required).
@@ -35,7 +36,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 - Deterministic keyword-scoring for all 7 tasks (scores in [0, 100]).
 - CLI commands: `list`, `show`, `run`, `compare`, `tasks`, `sample`, `data`,
-  `report`, `schema`, `verify`.
+  `report`, `schema`, `verify`, `run-record`.
 - Report formats: `text`, `json`, `html`.
 - Mock mode (no API key) for smoke testing the pipeline.
 - Real-model evaluation via OpenAI / Anthropic SDKs (optional `[judge]` extra).
@@ -56,8 +57,8 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 | `src/researchbench/` | Package source | The code |
 | `src/researchbench/tasks/` | 8 task modules (7 placeholders + HeterogeneousPilot) | TASK_DEFINITIONS.md + code |
 | `src/researchbench/core.py` | Benchmark runner, BenchmarkResult, TaskResult | The code |
-| `src/researchbench/cli.py` | Click-based CLI (10 commands) | The code |
-| `tests/` | 260 tests (task scoring, CLI, core, report rendering) | test files |
+| `src/researchbench/cli.py` | Click-based CLI (11 commands) | The code |
+| `tests/` | 281 tests (task scoring, CLI, core, report rendering) | test files |
 | `docs/` | Documentation (8 files) | docs/ |
 | `examples/` | Runnable demos | examples/ |
 | `.github/workflows/ci.yml` | CI: test matrix, typecheck, build | ci.yml |
@@ -67,16 +68,16 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 | Purpose | Command or method | Expected result |
 |---|---|---|
-| Full test suite | `pytest tests -v` | 260 passed |
-| With coverage gate | `pytest tests --cov=researchbench --cov-fail-under=80` | 88%+ coverage |
+| Full test suite | `pytest tests -v` | 281 passed |
+| With coverage gate | `pytest tests --cov=researchbench --cov-fail-under=80` | 80%+ coverage |
 | Lint | `ruff check src tests` | All checks passed |
-| Format | `ruff format --check src tests` | 22 files already formatted |
-| Type check | `mypy src` | Success, no issues in 12 files |
+| Format | `ruff format --check src tests` | formatted |
+| Type check | `mypy src` | Success |
 | Pre-commit | `pre-commit run --all-files` | All hooks passed |
 | Build wheel | `python -m build` | sdist + wheel created |
-| Install + smoke | `pip install dist/*.whl && researchbench --version` | version 0.1.0 |
+| Install + smoke | `pip install dist/*.whl && researchbench --version` | version 0.4.1 |
 | CLI list | `researchbench list` | 8 tasks listed |
-| Verify | `researchbench verify` | All 7 PASS |
+| Verify | `researchbench verify` | All 8 PASS |
 
 ## Constraints
 
@@ -107,7 +108,7 @@ roadmap in RESEARCH_BENCHMARK.md Section 11.
 
 ## Definition of done
 
-- All 260 tests pass (`pytest tests -v`).
+- All 281 tests pass (`pytest tests -v`).
 - `ruff check` and `ruff format --check` pass.
 - `mypy src` passes.
 - Wheel builds and installs in a clean venv.

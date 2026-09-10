@@ -137,9 +137,11 @@ def main() -> None:
 
       researchbench run --tasks all --model gpt-4o
 
+      researchbench run --tasks all --model gpt-4o --allow-draft
+
       researchbench run --tasks paper_comprehension --model gpt-4o --format json --save results.json
 
-      researchbench compare --model gpt-4o --model claude-3-opus --tasks all
+      researchbench compare --model gpt-4o --model claude-3-opus --tasks all --allow-draft
 
       researchbench verify
 

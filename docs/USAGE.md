@@ -28,7 +28,8 @@ researchbench list                          # list the 8 tasks
 researchbench run --tasks heterogeneous_pilot --model gpt-4o
 researchbench run --model gpt-4o --allow-draft   # include draft items
 researchbench run --tasks idea_generation,peer_review --model claude-3-opus
-researchbench compare --model gpt-4o --model claude-3-opus --tasks all
+researchbench compare --model gpt-4o --model claude-3-opus --tasks all --allow-draft
+researchbench verify                        # mock-mode health check (includes drafts)
 ```
 
 ## Command reference
@@ -47,15 +48,28 @@ Run the suite (or a subset) against **one** model.
 
 | Option | Default | Description |
 |---|---|---|
-| `--tasks` | `all` | Comma-separated task names, or `all`. |
+| `--tasks` | `all` | Comma-separated names, fnmatch globs (`paper_*`), or `all`. |
+| `--ignore` | empty | Comma-separated task names to exclude. |
 | `--model` | `gpt-4o` | Model identifier. See mock-mode rules below. |
 | `--format` | `text` | Report format: `text`, `json`, or `html`. |
 | `--save PATH` | — | Write the report to a file instead of stdout. |
 | `--verbose` | off | Include per-task `details` breakdown in text reports. |
+| `--dry-run` | off | Print selected tasks and dataset sizes; do not evaluate. |
+| `--benchmark` | off | Print per-task timing to stderr. |
+| `--quiet` | off | Suppress the text-report banner. |
+| `--parallel` | off | Run tasks concurrently. |
+| `--save-responses DIR` | — | Append raw model responses (`<dir>/<task>.txt`). |
+| `--allow-draft` | off | Include draft-status dataset items (e.g. q6). |
+
+Default `run` skips draft items. Mixed tasks still run; a task with **only**
+draft items is rejected unless `--allow-draft`.
 
 ```bash
 # JSON report (machine-readable), printed to stdout
 researchbench run --tasks all --model gpt-4o --format json
+
+# Include draft items such as heterogeneous_pilot q6
+researchbench run --tasks all --model gpt-4o --allow-draft --format json
 
 # HTML report, saved to disk
 researchbench run --tasks all --model gpt-4o --format html --save report.html
@@ -66,17 +80,60 @@ researchbench run --tasks all --model gpt-4o --verbose
 
 ### `researchbench compare`
 
-Run the same task subset against **multiple** models. `--model` is repeatable.
+Run the same task subset against **multiple** models. `--model` is repeatable
+and required unless `--dry-run`. Also accepts `--tasks`, `--ignore`,
+`--format`, `--save`, `--verbose`, `--dry-run`, and `--allow-draft`.
 
 ```bash
-researchbench compare --model gpt-4o --model claude-3-opus --tasks all
+researchbench compare --model gpt-4o --model claude-3-opus --tasks all --allow-draft
 researchbench compare --model gpt-4o --model gpt-4o-mini --format json --save cmp.json
 researchbench compare --model gpt-4o --model claude-3-opus --format html --save cmp.html
+researchbench compare --tasks all --dry-run
 ```
 
 `--format text` renders a per-task score table plus an AVERAGE row. `--format
 html` renders the same as a table page. `--format json` emits
-`{models, results: [{model, average, per_task}]}`.
+`{tasks, models, results: [{model, average, per_task}]}`.
+
+### `researchbench tasks`
+
+List tasks with dataset sizes. `--format text|json`. `--save PATH` writes the
+output.
+
+### `researchbench sample TASK`
+
+Print the first prompt in a task dataset. `--format text|json`.
+
+### `researchbench data TASK`
+
+Export a task dataset. `--format text|json`, `--save PATH`, `--validate`
+(pilot `DatasetItem` schema; rejects invalid items).
+
+### `researchbench report --from FILE`
+
+Re-render a saved JSON results file as `--format text|json|html`. `--save PATH`,
+`--verbose`.
+
+### `researchbench schema`
+
+Print the JSON Schema for the run report. `--save PATH` writes it to a file.
+
+### `researchbench verify`
+
+Mock-mode health check of all 8 tasks (includes draft items). Exit 0 if every
+score is in `[0, 100]`.
+
+### `researchbench run-record {import|export|validate}`
+
+Import, re-export, or validate a subscription/API `RunRecord` JSON file.
+
+```bash
+researchbench run-record validate --from record.json
+researchbench run-record import --from record.json --save out.json
+researchbench run-record export --from record.json --save out.json
+```
+
+`--from` is required for all three actions. Invalid records exit 1.
 
 ### Exit codes
 
@@ -99,7 +156,8 @@ from researchbench import Benchmark
 bench = Benchmark()                         # all 8 tasks
 subset = Benchmark(tasks=["paper_comprehension", "reproduction"])
 
-result = bench.run(model="gpt-4o")          # single model
+result = bench.run(model="gpt-4o")          # skips draft items
+result = bench.run(model="gpt-4o", allow_draft=True)
 result.average()                            # aggregate score
 result.summary()                            # short text
 result.to_json()                            # JSON string
