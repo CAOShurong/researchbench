@@ -18,21 +18,21 @@ Write-Host "==> 1. List all tasks"
 Invoke-Expression "$RB list"
 
 Write-Host ""
-Write-Host "==> 2. Evaluate a single model (paper_comprehension + idea_generation), text report"
-Invoke-Expression "$RB run --model gpt-4o --tasks paper_comprehension,idea_generation"
+Write-Host "==> 2. BEOL / heterogeneous-integration pilot (rubric-scored; the 30-second demo)"
+Invoke-Expression "$RB run --model gpt-4o --tasks heterogeneous_pilot"
 
 Write-Host ""
-Write-Host "==> 3. Evaluate everything, JSON report to a file"
-Invoke-Expression "$RB run --model gpt-4o --tasks all --format json --save report.json"
+Write-Host "==> 3. Same task, JSON report to a file"
+Invoke-Expression "$RB run --model gpt-4o --tasks heterogeneous_pilot --format json --save report.json"
 Write-Host "    wrote report.json"
 
 Write-Host ""
-Write-Host "==> 4. Compare two models, text table"
-Invoke-Expression "$RB compare --model gpt-4o --model claude-3-opus --tasks all"
+Write-Host "==> 4. Compare two models on the pilot, text table"
+Invoke-Expression "$RB compare --model gpt-4o --model claude-3-opus --tasks heterogeneous_pilot"
 
 Write-Host ""
 Write-Host "==> 5. Compare two models, HTML report"
-Invoke-Expression "$RB compare --model gpt-4o --model claude-3-opus --tasks all --format html --save comparison.html"
+Invoke-Expression "$RB compare --model gpt-4o --model claude-3-opus --tasks heterogeneous_pilot --format html --save comparison.html"
 Write-Host "    wrote comparison.html"
 
 Write-Host ""

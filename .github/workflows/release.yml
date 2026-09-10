@@ -4,21 +4,28 @@ on:
   push:
     tags: ["v*"]
 
+# Wheels are attached to the GitHub Release. Install from git or that asset;
+# PyPI is not configured, so this workflow must not call pypi-publish.
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Build distributions
-        run: |
-          python -m pip install --upgrade build twine
-          python -m build
-          python -m twine check dist/*
-      - name: Publish to PyPI (Trusted Publisher)
-        uses: pypa/gh-action-pypi-publish@release/v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Build distributions
+      run: |
+        python -m pip install --upgrade build twine
+        python -m build
+        python -m twine check dist/*
+    - name: Attach wheels to GitHub Release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        if ! gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+          gh release create "${GITHUB_REF_NAME}" --title "ResearchBench ${GITHUB_REF_NAME}" --generate-notes
+        fi
+        gh release upload "${GITHUB_REF_NAME}" dist/* --clobber

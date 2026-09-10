@@ -1,4 +1,4 @@
-"""Evaluate a model with the ResearchBench Python API.
+"""Evaluate a model on the BEOL / heterogeneous-integration pilot.
 
 Real-model run (OpenAI):
     $env:OPENAI_API_KEY = "sk-..."
@@ -31,7 +31,7 @@ def main() -> int:
         print("*" * 72)
         print()
 
-    bench = Benchmark()
+    bench = Benchmark(tasks=["heterogeneous_pilot"])
     result = bench.run(model=model)
 
     print()

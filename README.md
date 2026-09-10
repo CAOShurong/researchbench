@@ -3,7 +3,7 @@
 **Run a BEOL / heterogeneous-integration quiz on any chat model, in your terminal, with no API key.**
 
 ![CI](https://github.com/CAOShurong/researchbench/actions/workflows/ci.yml/badge.svg)
-![Tests](https://img.shields.io/badge/tests-281%20passed-brightgreen)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/CAOShurong/researchbench/master?urlpath=lab/tree/examples/demo.ipynb)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -11,6 +11,8 @@
 pip install "git+https://github.com/CAOShurong/researchbench.git@v0.4.1"
 researchbench run --tasks heterogeneous_pilot --model gpt-4o
 ```
+
+No browser install: [launch the same mock-mode demo on Binder](https://mybinder.org/v2/gh/CAOShurong/researchbench/master?urlpath=lab/tree/examples/demo.ipynb).
 
 No key → mock mode (smoke test). With a key → real answers, scored by a coded
 rubric (thermal budget, IGZO, HZO, 2D transfer vs growth, Cu–Cu hybrid bonding).

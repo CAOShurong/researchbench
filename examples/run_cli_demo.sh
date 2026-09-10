@@ -21,21 +21,21 @@ echo "==> 1. List all tasks"
 "${RB[@]}" list
 
 echo
-echo "==> 2. Evaluate a single model (paper_comprehension + idea_generation), text report"
-"${RB[@]}" run --model gpt-4o --tasks paper_comprehension,idea_generation
+echo "==> 2. BEOL / heterogeneous-integration pilot (rubric-scored; the 30-second demo)"
+"${RB[@]}" run --model gpt-4o --tasks heterogeneous_pilot
 
 echo
-echo "==> 3. Evaluate everything, JSON report to a file"
-"${RB[@]}" run --model gpt-4o --tasks all --format json --save report.json
+echo "==> 3. Same task, JSON report to a file"
+"${RB[@]}" run --model gpt-4o --tasks heterogeneous_pilot --format json --save report.json
 echo "    wrote report.json"
 
 echo
-echo "==> 4. Compare two models, text table"
-"${RB[@]}" compare --model gpt-4o --model claude-3-opus --tasks all
+echo "==> 4. Compare two models on the pilot, text table"
+"${RB[@]}" compare --model gpt-4o --model claude-3-opus --tasks heterogeneous_pilot
 
 echo
 echo "==> 5. Compare two models, HTML report"
-"${RB[@]}" compare --model gpt-4o --model claude-3-opus --tasks all --format html --save comparison.html
+"${RB[@]}" compare --model gpt-4o --model claude-3-opus --tasks heterogeneous_pilot --format html --save comparison.html
 echo "    wrote comparison.html"
 
 echo

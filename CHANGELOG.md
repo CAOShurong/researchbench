@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- First-screen demo is still `pip install` + `heterogeneous_pilot`. Binder badge
+  and `examples/demo.ipynb` now run that same mock-mode command (not the
+  placeholder tasks). Test-count badge removed from the README lead.
+- `examples/evaluate_model.py` and the CLI demo scripts run
+  `heterogeneous_pilot` so they no longer crash on draft-only placeholder tasks.
+- CI wheel smoke test runs `researchbench run --tasks heterogeneous_pilot`.
+- Tag `Release` workflow builds wheels and attaches them to the GitHub Release.
+  It no longer calls PyPI (not configured; install remains git / GitHub).
+
 ## [0.4.1] - 2026-09-10
 
 ### Added
