@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" role="img" aria-label="researchbench mock-mode BEOL pilot terminal output">
+  <rect width="920" height="420" rx="12" fill="#0d1117"/>
+  <rect x="0" y="0" width="920" height="36" rx="12" fill="#161b22"/>
+  <rect x="0" y="24" width="920" height="12" fill="#161b22"/>
+  <circle cx="22" cy="18" r="6" fill="#ff5f56"/>
+  <circle cx="42" cy="18" r="6" fill="#ffbd2e"/>
+  <circle cx="62" cy="18" r="6" fill="#27c93f"/>
+  <text x="86" y="22" fill="#8b949e" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">researchbench — heterogeneous_pilot (mock, no API key)</text>
+  <text x="28" y="68" fill="#3fb950" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">$</text>
+  <text x="48" y="68" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">researchbench run --tasks heterogeneous_pilot --model gpt-4o</text>
+  <text x="28" y="104" fill="#8b949e" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">ResearchBench Results: gpt-4o</text>
+  <text x="28" y="124" fill="#30363d" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">============================================================</text>
+  <text x="28" y="156" fill="#c9d1d9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">  beol_thermal_budget        50.0   copper / 400 C — partial</text>
+  <text x="28" y="180" fill="#f85149" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">  oxide_igzo                  0.0   missed In 5s / leakage</text>
+  <text x="28" y="204" fill="#d29922" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">  ferroelectric_hzo          13.3   temperature only</text>
+  <text x="28" y="228" fill="#f85149" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">  2d_tmd_monolithic3d         0.0   transfer vs growth missed</text>
+  <text x="28" y="252" fill="#d29922" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">  cu_cu_hybrid_bonding        5.6   fusion mentioned</text>
+  <text x="28" y="276" fill="#8b949e" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">  skipped draft q6 (Cheng 2026, not expert-reviewed)</text>
+  <text x="28" y="308" fill="#30363d" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">------------------------------------------------------------</text>
+  <text x="28" y="340" fill="#58a6ff" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="700">  AVERAGE                   13.78</text>
+  <text x="28" y="376" fill="#8b949e" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13">Fluent canned text is not enough. Hard negatives and missing physics zero the score.</text>
+  <text x="28" y="400" fill="#6e7681" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">Mock mode. Not a model ranking. Unrelated to Liu et al. ResearchBench (ACL 2026 Findings).</text>
+</svg>

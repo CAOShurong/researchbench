@@ -7,6 +7,10 @@
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
+<p align="center">
+  <img src="docs/assets/demo.svg" width="920" alt="Mock-mode BEOL pilot: average 13.78 because fluent canned text misses the physics">
+</p>
+
 ```bash
 pip install "git+https://github.com/CAOShurong/researchbench.git@v0.4.1"
 researchbench run --tasks heterogeneous_pilot --model gpt-4o
@@ -85,6 +89,7 @@ researchbench compare --model gpt-4o --model claude-3-opus --tasks all --allow-d
   evaluation protocol, reproducibility, comparison with existing benchmarks.
 - [`docs/RESEARCH.md`](docs/RESEARCH.md) — background research and gap analysis.
 - [`docs/USAGE.md`](docs/USAGE.md) — CLI and Python API reference.
+- [`docs/LAUNCH.md`](docs/LAUNCH.md) — how this repo is meant to be found (Show HN text).
 - [`docs/TASK_DEFINITIONS.md`](docs/TASK_DEFINITIONS.md) — task scoring formulas
   (note: these are placeholder mechanics, not validated evaluation).
 - [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) — how to develop, test and extend.
