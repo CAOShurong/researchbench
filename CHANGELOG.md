@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `researchbench quiz` scores a typed answer on the BEOL / heterogeneous-integration
   pilot with the same evidence rubric as `run`. `--item q1`, `--answer`, `--reveal`.
   No API key. Not an expert grade; ground truth is hidden unless `--reveal`.
+- `quiz --list` prints item ids and questions without scores or ground truth.
+- `quiz --answers-file answers.jsonl` scores a batch of `{id, answer}` rows and
+  reports mean / pass count. Missing ids score 0. Still not an expert grade.
 
 ### Changed
 

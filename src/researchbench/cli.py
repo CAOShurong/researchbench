@@ -152,6 +152,10 @@ def main() -> None:
 
       researchbench quiz --item q1 --answer "400 C BEOL thermal budget"
 
+      researchbench quiz --list
+
+      researchbench quiz --answers-file answers.jsonl
+
       researchbench data paper_comprehension --format json
 
       researchbench report --from results.json --format html --save report.html
@@ -697,6 +701,13 @@ def run_record(action: str, from_path: str | None, save_path: str | None) -> Non
     help="Pilot item id or suffix (q1, q2, …). Default: first reviewed item.",
 )
 @click.option("--answer", default=None, help="Score this text (required unless stdin is a TTY).")
+@click.option(
+    "--answers-file",
+    default=None,
+    type=click.Path(exists=True, dir_okay=False, readable=True),
+    help="JSONL of {id, answer} rows; scores every selected item.",
+)
+@click.option("--list", "list_items", is_flag=True, help="Print item ids and questions; no scores.")
 @click.option("--allow-draft", is_flag=True, default=False, help="Include draft item q6.")
 @click.option("--reveal", is_flag=True, default=False, help="Print ground truth after scoring.")
 @click.option(
@@ -706,22 +717,67 @@ def run_record(action: str, from_path: str | None, save_path: str | None) -> Non
     default="text",
 )
 def quiz(
-    item_id: str | None, answer: str | None, allow_draft: bool, reveal: bool, fmt: str
+    item_id: str | None,
+    answer: str | None,
+    answers_file: str | None,
+    list_items: bool,
+    allow_draft: bool,
+    reveal: bool,
+    fmt: str,
 ) -> None:
     """Score a human answer on the BEOL / heterogeneous-integration pilot.
 
     Uses the same evidence rubric as `run`. No API key. Not an expert grade.
     """
-    from researchbench.quiz import format_text, score_item, select_items
+    from researchbench.quiz import (
+        format_session_text,
+        format_text,
+        list_items_text,
+        load_answers_file,
+        score_item,
+        score_session,
+        select_items,
+    )
 
     try:
         items = select_items(allow_draft=allow_draft, item_id=item_id)
     except ValueError as exc:
         raise click.BadParameter(str(exc)) from exc
+
+    if list_items:
+        if fmt == "json":
+            click.echo(
+                json.dumps(
+                    [
+                        {
+                            "id": item.id,
+                            "question": item.task_data.get("question", ""),
+                        }
+                        for item in items
+                    ],
+                    indent=2,
+                )
+            )
+        else:
+            click.echo(list_items_text(items), nl=False)
+        return
+
+    if answers_file:
+        try:
+            answers = load_answers_file(answers_file)
+        except ValueError as exc:
+            raise click.UsageError(str(exc)) from exc
+        session = score_session(items, answers)
+        if fmt == "json":
+            click.echo(json.dumps(session, indent=2))
+        else:
+            click.echo(format_session_text(session), nl=False)
+        return
+
     item = items[0]
     if answer is None:
         if not sys.stdin.isatty():
-            raise click.UsageError("pass --answer when stdin is not a TTY")
+            raise click.UsageError("pass --answer or --answers-file when stdin is not a TTY")
         click.echo(item.task_data.get("question", item.id))
         answer = click.prompt("Your answer", type=str)
     payload = score_item(item, answer)
