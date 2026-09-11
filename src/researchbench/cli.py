@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fnmatch
 import json
+import sys
 
 import click
 
@@ -148,6 +149,8 @@ def main() -> None:
       researchbench tasks --format json
 
       researchbench sample paper_comprehension
+
+      researchbench quiz --item q1 --answer "400 C BEOL thermal budget"
 
       researchbench data paper_comprehension --format json
 
@@ -684,6 +687,50 @@ def run_record(action: str, from_path: str | None, save_path: str | None) -> Non
                 click.echo(f"  {e}")
             raise SystemExit(1)
         _emit(record.to_json(), "json", save_path)
+
+
+@main.command()
+@click.option(
+    "--item",
+    "item_id",
+    default=None,
+    help="Pilot item id or suffix (q1, q2, …). Default: first reviewed item.",
+)
+@click.option("--answer", default=None, help="Score this text (required unless stdin is a TTY).")
+@click.option("--allow-draft", is_flag=True, default=False, help="Include draft item q6.")
+@click.option("--reveal", is_flag=True, default=False, help="Print ground truth after scoring.")
+@click.option(
+    "--format",
+    "fmt",
+    type=click.Choice(["text", "json"], case_sensitive=False),
+    default="text",
+)
+def quiz(
+    item_id: str | None, answer: str | None, allow_draft: bool, reveal: bool, fmt: str
+) -> None:
+    """Score a human answer on the BEOL / heterogeneous-integration pilot.
+
+    Uses the same evidence rubric as `run`. No API key. Not an expert grade.
+    """
+    from researchbench.quiz import format_text, score_item, select_items
+
+    try:
+        items = select_items(allow_draft=allow_draft, item_id=item_id)
+    except ValueError as exc:
+        raise click.BadParameter(str(exc)) from exc
+    item = items[0]
+    if answer is None:
+        if not sys.stdin.isatty():
+            raise click.UsageError("pass --answer when stdin is not a TTY")
+        click.echo(item.task_data.get("question", item.id))
+        answer = click.prompt("Your answer", type=str)
+    payload = score_item(item, answer)
+    if fmt == "json":
+        if reveal:
+            payload["ground_truth"] = item.ground_truth
+        click.echo(json.dumps(payload, indent=2))
+        return
+    click.echo(format_text(payload, reveal=item.ground_truth if reveal else None))
 
 
 if __name__ == "__main__":

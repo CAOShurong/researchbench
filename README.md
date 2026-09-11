@@ -14,6 +14,7 @@
 ```bash
 pip install "git+https://github.com/CAOShurong/researchbench.git@v0.4.1"
 researchbench run --tasks heterogeneous_pilot --model gpt-4o
+researchbench quiz --item q1 --answer "400 C BEOL thermal budget"
 ```
 
 No browser install: [launch the same mock-mode demo on Binder](https://mybinder.org/v2/gh/CAOShurong/researchbench/master?urlpath=lab/tree/examples/demo.ipynb).
@@ -42,6 +43,7 @@ items). It is not a model ranking.
 |---|---|
 | `researchbench run --tasks heterogeneous_pilot` | Rubric scores + per-criterion evidence for 5 BEOL items |
 | `researchbench run --tasks heterogeneous_pilot --allow-draft` | Also includes draft item q6 (2026 paper, not expert-reviewed) |
+| `researchbench quiz --item q1 --answer "..."` | Same BEOL rubric on a human answer. No API key. Not an expert grade. |
 | `researchbench list` | 8 tasks. Seven are keyword-matching **placeholders** and must not be quoted as model quality. |
 
 The question this harness is built to answer later:

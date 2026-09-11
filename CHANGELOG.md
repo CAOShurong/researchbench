@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `researchbench quiz` scores a typed answer on the BEOL / heterogeneous-integration
+  pilot with the same evidence rubric as `run`. `--item q1`, `--answer`, `--reveal`.
+  No API key. Not an expert grade; ground truth is hidden unless `--reveal`.
+
 ### Changed
 
 - First-screen demo is still `pip install` + `heterogeneous_pilot`. Binder badge
